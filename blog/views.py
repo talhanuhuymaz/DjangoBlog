@@ -25,9 +25,6 @@ def login_view(request):
     return render(request, 'blog/login.html')
 
 def signup(request):
-<<<<<<< Updated upstream
-    return render(request,'blog/signup.html')
-=======
     if request.method == 'POST':
         username = request.POST.get('uname')
         email = request.POST.get('uemail')
@@ -79,4 +76,3 @@ def my_posts(request):
         'posts': Post.objects.filter(author=request.user).order_by('-date_posted')
     }
     return render(request, 'blog/my_posts.html', context)
->>>>>>> Stashed changes
