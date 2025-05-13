@@ -4,10 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <title>Blog</title>
-
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    
     <style>
+        body {
+            background-color: #f8f9fa;
+        }
         .custom-container {
             max-width: 1450px;
         }
@@ -22,25 +29,58 @@
             right: 0;
             left: auto;
         }
+        .card {
+            border: none;
+            transition: transform 0.2s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .navbar {
+            border-bottom: 1px solid rgba(0,0,0,.125);
+        }
+        .btn-outline-primary {
+            border-color: #0e1c36;
+            color: #0e1c36;
+        }
+        .btn-outline-primary:hover {
+            background-color: #0e1c36;
+            color: #fff;
+        }
+        .btn-primary {
+            background-color: #0e1c36;
+            border-color: #0e1c36;
+        }
+        .btn-primary:hover {
+            background-color: #1a2942;
+            border-color: #1a2942;
+        }
+        .badge-primary {
+            background-color: #0e1c36;
+        }
     </style>
 </head>
 
 <body>
-    <div class="container custom-container">
-        {% if messages %}
+    {% if messages %}
+        <div class="container mt-3">
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
                     {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             {% endfor %}
-        {% endif %}
-        
-        {% block content %}
-        {% endblock %}
-    </div>
+        </div>
+    {% endif %}
     
+    {% block content %}
+    {% endblock %}
+    
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Popper.js -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"></script>
 </body>
 </html>
