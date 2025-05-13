@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from .models import Post
 
 # Create your views here.
@@ -46,8 +47,21 @@ def signup(request):
 
 @login_required
 def home(request):
+    search_query = request.GET.get('search', '')
+    posts = Post.objects.all()
+    
+    if search_query:
+        posts = posts.filter(
+            Q(title__icontains=search_query) |
+            Q(content__icontains=search_query) |
+            Q(author__username__icontains=search_query)
+        )
+    
+    posts = posts.order_by('-date_posted')
+    
     context = {
-        'posts': Post.objects.all().order_by('-date_posted')
+        'posts': posts,
+        'search_query': search_query,
     }
     return render(request, 'blog/home.html', context)
 
