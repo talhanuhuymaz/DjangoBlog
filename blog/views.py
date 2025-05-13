@@ -23,3 +23,9 @@ def login_view(request):
 
 def signup(request):
     return render(request,'blog/signup.html')
+
+def home(request):
+    context = {
+        'posts': Post.objects.all()
+    }
+    return render(request, 'blog/home.html', context)
