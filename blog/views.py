@@ -18,7 +18,7 @@ def login_view(request):
         
         if user is not None:
             login(request, user)
-            return redirect('home-page')  # Fixed redirect to match URL pattern name
+            return redirect('home-page')
         else:
             messages.error(request, 'Invalid username or password')
     
