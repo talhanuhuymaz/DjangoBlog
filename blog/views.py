@@ -119,12 +119,24 @@ def test_image(request, image_name):
 
 @login_required
 def profile(request):
+    # Ensure user has a profile
+    try:
+        profile = request.user.profile
+    except UserProfile.DoesNotExist:
+        profile = UserProfile.objects.create(user=request.user)
+
     if request.method == 'POST':
         # Get form data
         user = request.user
         username = request.POST.get('username')
         email = request.POST.get('email')
         avatar = request.FILES.get('avatar')
+        password = request.POST.get('password')
+        
+        # Verify password
+        if not password or not user.check_password(password):
+            messages.error(request, 'Current password is incorrect')
+            return redirect('profile')
         
         # Check if username exists (excluding current user)
         if User.objects.filter(username=username).exclude(id=user.id).exists():
@@ -156,3 +168,33 @@ def profile(request):
         'user': request.user
     }
     return render(request, 'blog/profile.html', context)
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        current_password = request.POST.get('current_password')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+        
+        # Verify current password
+        if not request.user.check_password(current_password):
+            messages.error(request, 'Current password is incorrect')
+            return redirect('profile')
+        
+        # Verify new passwords match
+        if new_password != confirm_password:
+            messages.error(request, 'New passwords do not match')
+            return redirect('profile')
+        
+        # Update password
+        request.user.set_password(new_password)
+        request.user.save()
+        
+        # Re-authenticate the user to prevent logout
+        user = authenticate(username=request.user.username, password=new_password)
+        login(request, user)
+        
+        messages.success(request, 'Password updated successfully!')
+        return redirect('profile')
+    
+    return redirect('profile')
