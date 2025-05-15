@@ -2,49 +2,96 @@
 {% block content %}
 {% load static %}
 <div class="container custom-container">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light w-100" >
-        
-        
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light w-100">
+        <div class="container-fluid">
+            <!-- Home button on the left -->
+            <a class="btn btn-outline-primary" href="/home/">
+                <i class="fas fa-home"></i> Home
+            </a>
 
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto ">
-                <li><a href="/home"><img  class="w-50 "  src="{% static 'image/pho.png' %}" alt=""></a></li>
-               
-            </ul>
-            <form class="form-inline my-2 my-lg-0">
-                <div class="dropdown">
-                    <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                      Profile
-                    </button>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                      <a class="dropdown-item" href="/newpost">New Post</a>
-                      <a class="dropdown-item" href="/mypost">My Posts</a>
-                      <a class="dropdown-item" href="/signout">Sign Out</a>
-                    </div>
-                  </div>
-            </form>
+            <!-- Profile dropdown on the right -->
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-user"></i> Profile
+                </button>
+                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                    <a class="dropdown-item" href="/myposts/">My Posts</a>
+                    <a class="dropdown-item" href="/signout/">Sign Out</a>
+                </div>
+            </div>
         </div>
-
     </nav>
+
     <br><br>
     <div class="container custom-container" style="max-width: 1350px; ">
+        <!-- Add New Post button here, before the posts loop -->
+        <div class="mb-4">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newPostModal">
+                <i class="fas fa-plus"></i> Create New Post
+            </button>
+        </div>
+
+        <!-- Modal definition moved outside the loop -->
+        <div class="modal fade" id="newPostModal" tabindex="-1" aria-labelledby="newPostModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="newPostModalLabel">Create New Post</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="POST" action="/newpost/" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="form-group mb-3">
+                                <label for="postTitle">Title</label>
+                                <input type="text" class="form-control" id="postTitle" name="title" required>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="postImage">Image</label>
+                                <input type="file" class="form-control" id="postImage" name="image" accept="image/*">
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="postContent">Content</label>
+                                <textarea class="form-control" id="postContent" name="content" rows="4" required></textarea>
+                            </div>
+                            <div class="modal-footer px-0 pb-0">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Create Post</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {% for post in posts %}
         <article class="media content-section">
 
             <div class="media-body" style="border: 1px solid black; padding: 23px; margin-bottom: 10px;">
                 <div class="article-metadata">
-                    <!-- <h3 aligh="left">{{ post.author }} </h3>
-                    <h5 aligh="right">{{ post.date_posted|date:"F d, Y" }}</h5> -->
                     <h1 class="text-uppercase" style="text-align:left;float:left; color: #000000;">{{ post.author }}</h1>
                     <h5 style="text-align:right;float:right;">{{ post.date_posted|date:"F d, Y" }}</h5>
                     <hr style="clear:both;" />
-
+                    {% if user == post.author %}
+                    <form method="POST" action="/delete_post/{{ post.id }}/" style="float: right;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this post?')">
+                            <i class="fas fa-trash"></i> Delete Post
+                        </button>
+                    </form>
+                    {% endif %}
                 </div>
                 <h3>{{ post.title }}</h3>
+                {% if post.image %}
+                    <div class="post-image-container text-center mb-3">
+                        <img src="/media/{{ post.image }}" 
+                             alt="Post image" 
+                             class="img-fluid rounded shadow"
+                             style="max-width: 100%; 
+                                    max-height: 600px; 
+                                    object-fit: contain;">
+                    </div>
+                {% endif %}
                 <p class="article-content">{{ post.content }}</p>
                 <br><br>
             </div>
