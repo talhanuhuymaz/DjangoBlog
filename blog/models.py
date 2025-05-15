@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 # Create your models here.
 
@@ -19,3 +21,27 @@ class Post(models.Model):
         if self.image:
             self.image.delete()
         super().delete(*args, **kwargs)
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    avatar = models.ImageField(upload_to='profile_images/', null=True, blank=True, default='profile_images/default.png')
+
+    def __str__(self):
+        return f'{self.user.username} Profile'
+
+    def delete(self, *args, **kwargs):
+        # Delete the image file when the profile is deleted
+        if self.avatar and self.avatar.name != 'profile_images/default.png':
+            self.avatar.delete()
+        super().delete(*args, **kwargs)
+
+# Create profile when user is created
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
+
+# Save profile when user is saved
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()

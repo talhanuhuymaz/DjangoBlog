@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from .models import Post
+from .models import Post, UserProfile
 from django.conf import settings
 import os
 
@@ -116,3 +116,43 @@ def test_image(request, image_name):
         with open(image_path, 'rb') as img:
             return HttpResponse(img.read(), content_type='image/jpeg')
     return HttpResponse('Image not found', status=404)
+
+@login_required
+def profile(request):
+    if request.method == 'POST':
+        # Get form data
+        user = request.user
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        avatar = request.FILES.get('avatar')
+        
+        # Check if username exists (excluding current user)
+        if User.objects.filter(username=username).exclude(id=user.id).exists():
+            messages.error(request, 'Username already exists')
+            return redirect('profile')
+        
+        # Check if email exists (excluding current user)
+        if User.objects.filter(email=email).exclude(id=user.id).exists():
+            messages.error(request, 'Email already exists')
+            return redirect('profile')
+        
+        # Update user information
+        user.username = username
+        user.email = email
+        user.save()
+        
+        # Update profile avatar if provided
+        if avatar:
+            # Delete old avatar if it's not the default
+            if user.profile.avatar and user.profile.avatar.name != 'profile_images/default.png':
+                user.profile.avatar.delete()
+            user.profile.avatar = avatar
+            user.profile.save()
+        
+        messages.success(request, 'Profile updated successfully!')
+        return redirect('profile')
+    
+    context = {
+        'user': request.user
+    }
+    return render(request, 'blog/profile.html', context)
