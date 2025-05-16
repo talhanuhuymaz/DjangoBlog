@@ -17,7 +17,10 @@
                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
                     <a class="dropdown-item" href="/profile/">Profile</a>
                     <a class="dropdown-item" href="/myposts/">My Posts</a>
-                    <a class="dropdown-item" href="/signout/">Sign Out</a>
+                    <form method="POST" action="/signout/">
+                        {% csrf_token %}
+                        <button type="submit" class="dropdown-item">Sign Out</button>
+                    </form>
                 </div>
             </div>
         </div>
