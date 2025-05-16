@@ -20,6 +20,13 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
+            # Ensure the user has a profile
+            try:
+                profile = user.profile
+            except UserProfile.DoesNotExist:
+                # Create profile if it doesn't exist
+                UserProfile.objects.create(user=user)
+                
             login(request, user)
             return redirect('home-page')
         else:
@@ -50,20 +57,19 @@ def signup(request):
 @login_required
 def home(request):
     search_query = request.GET.get('search', '')
-    posts = Post.objects.all()
     
     if search_query:
-        posts = posts.filter(
-            Q(title__icontains=search_query) |
+        posts = Post.objects.filter(
+            Q(title__icontains=search_query) | 
             Q(content__icontains=search_query) |
             Q(author__username__icontains=search_query)
-        )
-    
-    posts = posts.order_by('-date_posted')
+        ).order_by('-date_posted')
+    else:
+        posts = Post.objects.all().order_by('-date_posted')
     
     context = {
         'posts': posts,
-        'search_query': search_query,
+        'search_query': search_query
     }
     return render(request, 'blog/home.html', context)
 
@@ -106,8 +112,9 @@ def my_posts(request):
 
 @login_required
 def signout(request):
-    logout(request)
-    messages.success(request, 'You have been logged out successfully!')
+    if request.method == 'POST':
+        logout(request)
+        messages.success(request, 'You have been logged out successfully!')
     return redirect('login-page')
 
 @login_required
