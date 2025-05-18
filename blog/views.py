@@ -8,6 +8,7 @@ from django.db.models import Q
 from .models import Post, UserProfile
 from django.conf import settings
 import os
+from django.core.exceptions import ValidationError
 
 # Create your views here.
 def test(request):
@@ -89,14 +90,24 @@ def new_post(request):
                 )
                 
                 if image:
+                    # Validate file size (max 5MB)
+                    if image.size > 5 * 1024 * 1024:
+                        post.delete()
+                        messages.error(request, 'Image size should not exceed 5MB')
+                        return redirect('home-page')
+                    
+                    # Validate file type
+                    if not image.content_type.startswith('image/'):
+                        post.delete()
+                        messages.error(request, 'File must be an image')
+                        return redirect('home-page')
+                    
                     post.image = image
                     post.save()
-                    print(f"Image saved at: {post.image.url}")  # Debug print
                 
                 messages.success(request, 'Post created successfully!')
                 return redirect('home-page')
             except Exception as e:
-                print(f"Error saving post: {str(e)}")
                 messages.error(request, f'Error creating post: {str(e)}')
         else:
             messages.error(request, 'Please fill in all required fields')
@@ -169,20 +180,34 @@ def profile(request):
             messages.error(request, 'Email already exists')
             return redirect('profile')
         
-        # Update user information
-        user.username = username
-        user.email = email
-        user.save()
+        try:
+            # Update user information
+            user.username = username
+            user.email = email
+            user.save()
+            
+            # Update profile avatar if provided
+            if avatar:
+                # Validate file size (max 2MB)
+                if avatar.size > 2 * 1024 * 1024:
+                    messages.error(request, 'Avatar size should not exceed 2MB')
+                    return redirect('profile')
+                
+                # Validate file type
+                if not avatar.content_type.startswith('image/'):
+                    messages.error(request, 'File must be an image')
+                    return redirect('profile')
+                
+                # Delete old avatar if it's not the default
+                if user.profile.avatar and user.profile.avatar.name != 'profile_images/default.png':
+                    user.profile.avatar.delete()
+                user.profile.avatar = avatar
+                user.profile.save()
+            
+            messages.success(request, 'Profile updated successfully!')
+        except Exception as e:
+            messages.error(request, f'Error updating profile: {str(e)}')
         
-        # Update profile avatar if provided
-        if avatar:
-            # Delete old avatar if it's not the default
-            if user.profile.avatar and user.profile.avatar.name != 'profile_images/default.png':
-                user.profile.avatar.delete()
-            user.profile.avatar = avatar
-            user.profile.save()
-        
-        messages.success(request, 'Profile updated successfully!')
         return redirect('profile')
     
     context = {
