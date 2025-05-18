@@ -25,6 +25,9 @@
             </form>
 
             <div class="navbar-nav">
+                <button onclick="toggleTheme()" class="theme-toggle" title="Toggle theme">
+                    <i id="theme-icon" class="fas fa-moon"></i>
+                </button>
                 <div class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
                         <i class="fas fa-user-circle me-2"></i>
@@ -64,11 +67,12 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="d-flex align-items-center">
-                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" 
+                                 style="width: 40px; height: 40px; font-size: 1.2rem;">
                                 {{ post.author.username|make_list|first|upper }}
                             </div>
                             <div class="ms-3">
-                                <h5 class="mb-0">{{ post.author }}</h5>
+                                <h6 class="mb-0 fw-semibold">{{ post.author.username }}</h6>
                                 <small class="text-muted">{{ post.date_posted|date:"F d, Y" }}</small>
                             </div>
                         </div>
@@ -83,7 +87,7 @@
                         {% endif %}
                     </div>
 
-                    <h4 class="card-title">{{ post.title }}</h4>
+                    <h4 class="card-title mb-3">{{ post.title }}</h4>
                     
                     {% if post.image %}
                     <div class="post-image-container text-center my-3">
