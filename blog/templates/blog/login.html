@@ -1,37 +1,78 @@
 {% extends 'blog/base.html' %}
+{% block title %}Login{% endblock %}
 {% block content %}
 {% load static %}
-<div class="container">
-    <div class="row">
-        <div class="col-md-6 offset-md-3">
-            <!-- <h2 class="text-center text-dark mt-5">BlogBridges</h2> -->
-            <br><br><br><br>
-            <div class="card my-5" style="background-color:#F0F8FF;">
 
-                <form class="card-body cardbody-color p-lg-5"  method="post">
+<div class="container min-vh-100 d-flex align-items-center justify-content-center py-5">
+    <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
+        <div class="text-center mb-4">
+            <h1 class="display-5 fw-bold text-primary mb-1">
+                <i class="fas fa-blog"></i> BlogSpace
+            </h1>
+            <p class="text-muted">Share your thoughts with the world</p>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4 p-sm-5">
+                <h2 class="card-title text-center mb-4 fw-semibold">Welcome Back</h2>
+
+                <form method="post">
                     {% csrf_token %}
-                    <div class="text-center">
-                       
+                    
+                    <div class="mb-4">
+                        <label for="Username" class="form-label">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0">
+                                <i class="fas fa-user text-muted"></i>
+                            </span>
+                            <input type="text" 
+                                   class="form-control bg-light border-0 ps-2" 
+                                   id="Username" 
+                                   name="uname" 
+                                   placeholder="Enter your username"
+                                   required>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <input type="text" class="form-control" id="Username" name="uname" aria-describedby="emailHelp"
-                            placeholder="Name">
+                    <div class="mb-4">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0">
+                                <i class="fas fa-lock text-muted"></i>
+                            </span>
+                            <input type="password" 
+                                   class="form-control bg-light border-0 ps-2" 
+                                   id="password" 
+                                   name="upassword" 
+                                   placeholder="Enter your password"
+                                   required>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <input type="password" class="form-control" id="password" name="upassword" placeholder="password">
-                    </div>
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-color px-5 mb-5 w-100">Login</button>
-                    </div>
-                    <div id="emailHelp" class="form-text text-center mb-5 text-dark">Not
-                        Registered? <a href="{% url 'signup-page' %}" class="text-dark fw-bold"> Create an
-                            Account</a>
-                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mb-4">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </button>
+
+                    <p class="text-center mb-0">
+                        Don't have an account? 
+                        <a href="{% url 'signup-page' %}" class="text-primary text-decoration-none fw-semibold">
+                            Sign up
+                        </a>
+                    </p>
                 </form>
             </div>
-
         </div>
+
+        {% if messages %}
+        <div class="mt-4">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
 </div>
 

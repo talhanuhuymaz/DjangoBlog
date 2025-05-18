@@ -1,65 +1,108 @@
 {% extends 'blog/base.html' %}
+{% block title %}My Posts{% endblock %}
 {% block content %}
 {% load static %}
-<div class="container custom-container">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light w-100">
-        <div class="container-fluid">
-            <!-- Home button on the left -->
-            <a class="btn btn-outline-primary" href="/home/">
-                <i class="fas fa-home"></i> Home
-            </a>
 
-            <!-- Profile dropdown on the right -->
-            <div class="dropdown">
-                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fas fa-user"></i> Profile
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-light sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="/home/">
+            <i class="fas fa-blog"></i> BlogSpace
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <div class="navbar-nav ms-auto">
+                <button onclick="toggleTheme()" class="theme-toggle" title="Toggle theme">
+                    <i id="theme-icon" class="fas fa-moon"></i>
                 </button>
-                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                    <a class="dropdown-item" href="/profile/">Profile</a>
-                    <a class="dropdown-item" href="/myposts/">My Posts</a>
-                    <form method="POST" action="/signout/">
-                        {% csrf_token %}
-                        <button type="submit" class="dropdown-item">Sign Out</button>
-                    </form>
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle me-2"></i>
+                        {{ user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="/profile/"><i class="fas fa-user me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item active" href="/myposts/"><i class="fas fa-file-alt me-2"></i>My Posts</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="POST" action="/signout/" class="dropdown-item p-0">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Sign Out</button>
+                            </form>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
-    </nav>
+    </div>
+</nav>
 
-    <br><br>
-    <div class="container custom-container" style="max-width: 1350px;">
-        <h2 class="mb-4">My Posts</h2>
+<!-- Main Content -->
+<div class="custom-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0"><i class="fas fa-file-alt me-2"></i>My Posts</h4>
+        <a href="/home/" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-2"></i>Create New Post
+        </a>
+    </div>
+
+    <!-- Posts Grid -->
+    <div class="row g-4">
         {% for post in posts %}
-        <article class="media content-section">
-            <div class="media-body" style="border: 1px solid black; padding: 23px; margin-bottom: 10px;">
-                <div class="article-metadata">
-                    <h1 class="text-uppercase" style="text-align:left;float:left; color: #000000;">{{ post.author }}</h1>
-                    <h5 style="text-align:right;float:right;">{{ post.date_posted|date:"F d, Y" }}</h5>
-                    <hr style="clear:both;" />
-                    {% if user == post.author %}
-                    <form method="POST" action="/delete_post/{{ post.id }}/" style="float: right;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger btn-sm"
-                            onclick="return confirm('Are you sure you want to delete this post?')">
-                            <i class="fas fa-trash"></i> Delete Post
-                        </button>
-                    </form>
+        <div class="col-12 fade-in">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" 
+                                 style="width: 40px; height: 40px; font-size: 1.2rem;">
+                                {{ post.author.username|make_list|first|upper }}
+                            </div>
+                            <div class="ms-3">
+                                <h6 class="mb-0 fw-semibold">{{ post.author.username }}</h6>
+                                <small class="text-muted">{{ post.date_posted|date:"F d, Y" }}</small>
+                            </div>
+                        </div>
+                        <form method="POST" action="/delete_post/{{ post.id }}/" class="ms-2">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger btn-sm" 
+                                    onclick="return confirm('Are you sure you want to delete this post?')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+
+                    <h4 class="card-title mb-3">{{ post.title }}</h4>
+                    
+                    {% if post.image %}
+                    <div class="post-image-container text-center my-3">
+                        <img src="{{ post.image.url }}" 
+                             alt="Post image" 
+                             class="img-fluid rounded"
+                             style="max-height: 400px; width: auto; object-fit: contain;">
+                    </div>
                     {% endif %}
+                    
+                    <p class="card-text">{{ post.content }}</p>
                 </div>
-                <h3>{{ post.title }}</h3>
-                {% if post.image %}
-                <div class="post-image-container text-center mb-3">
-                    <img src="/media/{{ post.image }}" alt="Post image" class="img-fluid rounded shadow"
-                        style="max-width: 100%; max-height: 600px; object-fit: contain;">
-                </div>
-                {% endif %}
-                <p class="article-content">{{ post.content }}</p>
-                <br><br>
             </div>
-        </article>
+        </div>
         {% empty %}
-        <div class="alert alert-info">
-            You haven't created any posts yet.
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                    <h4>No Posts Yet</h4>
+                    <p class="mb-3">You haven't created any posts yet.</p>
+                    <a href="/home/" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-2"></i>Create Your First Post
+                    </a>
+                </div>
+            </div>
         </div>
         {% endfor %}
     </div>
