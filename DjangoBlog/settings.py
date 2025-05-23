@@ -24,6 +24,10 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
+# Ensure static directory exists
+os.makedirs(os.path.join(BASE_DIR, 'static'), exist_ok=True)
+os.makedirs(STATIC_ROOT, exist_ok=True)
+
 # Security settings
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 X_FRAME_OPTIONS = 'SAMEORIGIN'
