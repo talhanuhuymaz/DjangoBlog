@@ -63,7 +63,7 @@
     <div class="row g-4">
         {% for post in posts %}
         <div class="col-12 fade-in">
-            <div class="card">
+            <div class="card post-card" style="cursor: pointer;" onclick="showPostModal('{{ post.id }}')">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="d-flex align-items-center">
@@ -84,13 +84,13 @@
                             <div class="ms-3">
                                 <h6 class="mb-0 fw-semibold">{{ post.author.username }}</h6>
                                 <small class="text-muted">
-                                    By <a href="{% url 'user_profile' post.author.username %}" class="text-decoration-none">{{ post.author }}</a>
+                                    By <a href="{% url 'user_profile' post.author.username %}" class="text-decoration-none" onclick="event.stopPropagation();">{{ post.author }}</a>
                                     on {{ post.date_posted|date:"F d, Y" }}
                                 </small>
                             </div>
                         </div>
                         {% if user == post.author %}
-                        <div class="d-flex">
+                        <div class="d-flex" onclick="event.stopPropagation();">
                             <button type="button" class="btn btn-outline-primary btn-sm me-2" 
                                     data-bs-toggle="modal" data-bs-target="#editPostModal{{ post.id }}">
                                 <i class="fas fa-edit"></i>
@@ -117,7 +117,62 @@
                     </div>
                     {% endif %}
                     
-                    <p class="card-text post-content">{{ post.content }}</p>
+                    <p class="card-text post-content">{{ post.content|truncatewords:50 }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Post View Modal -->
+        <div class="modal fade" id="postModal{{ post.id }}" tabindex="-1" aria-labelledby="postModalLabel{{ post.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header border-0 pb-0">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <div class="row">
+                                {% if post.image %}
+                                <div class="col-md-8">
+                                    <div class="post-image-container text-center mb-3">
+                                        <img src="{{ post.image.url }}" 
+                                             alt="Post image" 
+                                             class="img-fluid rounded"
+                                             style="max-height: 70vh; width: auto; object-fit: contain;">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                {% else %}
+                                <div class="col-12">
+                                {% endif %}
+                                    <div class="d-flex align-items-center mb-4">
+                                        {% if post.author.profile.avatar %}
+                                        <img src="{{ post.author.profile.avatar.url }}" 
+                                             alt="Profile Avatar" 
+                                             class="avatar-circle post-avatar-image shadow-sm">
+                                        {% elif post.author.profile.selected_avatar %}
+                                        <div class="avatar-circle post-avatar-icon avatar-dynamic-bg shadow-sm"
+                                             style="--avatar-bg-color: {{ post.author.profile.selected_avatar_color }}">
+                                            <i class="{{ post.author.profile.selected_avatar }}"></i>
+                                        </div>
+                                        {% else %}
+                                        <div class="avatar-circle post-avatar bg-primary text-white shadow-sm">
+                                            {{ post.author.username|make_list|first|upper }}
+                                        </div>
+                                        {% endif %}
+                                        <div class="ms-3">
+                                            <h6 class="mb-0 fw-semibold">
+                                                <a href="{% url 'user_profile' post.author.username %}" class="text-decoration-none">{{ post.author.username }}</a>
+                                            </h6>
+                                            <small class="text-muted">{{ post.date_posted|date:"F d, Y" }}</small>
+                                        </div>
+                                    </div>
+                                    <h3 class="mb-4">{{ post.title }}</h3>
+                                    <div class="post-content">{{ post.content }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -229,4 +284,11 @@
 {% endif %}
 {% endfor %}
 
+<script>
+function showPostModal(postId) {
+    const modalId = `postModal${postId}`;
+    const modal = new bootstrap.Modal(document.getElementById(modalId));
+    modal.show();
+}
+</script>
 {% endblock %}

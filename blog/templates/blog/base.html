@@ -291,6 +291,35 @@
         .avatar-dynamic-bg {
             background-color: var(--avatar-bg-color, #4F46E5);
         }
+
+        .post-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .post-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+        }
+        
+        .modal-content {
+            border: none;
+            border-radius: 1rem;
+        }
+        
+        .modal-dialog-centered.modal-xl {
+            max-width: 90%;
+        }
+        
+        @media (min-width: 1200px) {
+            .modal-dialog-centered.modal-xl {
+                max-width: 1140px;
+            }
+        }
+        
+        .post-content {
+            white-space: pre-line;
+            line-height: 1.6;
+        }
     </style>
 </head>
 
