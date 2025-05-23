@@ -83,7 +83,10 @@
                             {% endif %}
                             <div class="ms-3">
                                 <h6 class="mb-0 fw-semibold">{{ post.author.username }}</h6>
-                                <small class="text-muted">{{ post.date_posted|date:"F d, Y" }}</small>
+                                <small class="text-muted">
+                                    By <a href="{% url 'user_profile' post.author.username %}" class="text-decoration-none">{{ post.author }}</a>
+                                    on {{ post.date_posted|date:"F d, Y" }}
+                                </small>
                             </div>
                         </div>
                         {% if user == post.author %}
