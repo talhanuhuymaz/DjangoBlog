@@ -68,23 +68,51 @@
                                 {% if user.profile.avatar %}
                                     <img src="{{ user.profile.avatar.url }}" 
                                          alt="Profile Avatar" 
-                                         class="rounded-circle shadow-sm" 
-                                         style="width: 150px; height: 150px; object-fit: cover;">
+                                         class="avatar-circle profile-avatar-image shadow-sm d-block mx-auto">
+                                {% elif user.profile.selected_avatar %}
+                                    <div class="avatar-circle profile-avatar-icon avatar-dynamic-bg shadow-sm mx-auto"
+                                         style="--avatar-bg-color: {{ user.profile.selected_avatar_color }}">
+                                        <i class="{{ user.profile.selected_avatar }}"></i>
+                                    </div>
                                 {% else %}
-                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto"
-                                         style="width: 150px; height: 150px; font-size: 60px;">
+                                    <div class="avatar-circle profile-avatar bg-primary text-white shadow-sm mx-auto">
                                         {{ user.username|make_list|first|upper }}
                                     </div>
                                 {% endif %}
                             </div>
+                            
+                            <!-- Avatar Selection -->
                             <div class="mb-4">
-                                <label for="avatarUpload" class="form-label">Profile Picture</label>
-                                <input type="file" 
-                                       class="form-control bg-light border-0" 
-                                       id="avatarUpload" 
-                                       name="avatar" 
-                                       accept="image/*">
-                                <div class="form-text">Maximum file size: 2MB</div>
+                                <label class="form-label d-block">Choose Avatar Style</label>
+                                <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
+                                    {% for avatar in default_avatars %}
+                                    <div class="avatar-option">
+                                        <input type="radio" 
+                                               class="btn-check" 
+                                               name="selected_avatar" 
+                                               id="avatar{{ forloop.counter }}" 
+                                               value="{{ avatar.icon }}"
+                                               {% if user.profile.selected_avatar == avatar.icon %}checked{% endif %}>
+                                        <label class="btn btn-outline-primary rounded-circle p-3" 
+                                               for="avatar{{ forloop.counter }}"
+                                               style="width: 60px; height: 60px;">
+                                            <i class="{{ avatar.icon }}"></i>
+                                        </label>
+                                        <small class="d-block mt-1 text-muted">{{ avatar.name }}</small>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="text-center">
+                                    <p class="text-muted mb-2">- OR -</p>
+                                    <label for="avatarUpload" class="form-label">Upload Custom Picture</label>
+                                    <input type="file" 
+                                           class="form-control bg-light border-0" 
+                                           id="avatarUpload" 
+                                           name="avatar" 
+                                           accept="image/*">
+                                    <div class="form-text">Maximum file size: 2MB</div>
+                                </div>
                             </div>
                         </div>
 
