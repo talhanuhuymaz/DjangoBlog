@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -9,6 +9,10 @@ from .models import Post, UserProfile
 from django.conf import settings
 import os
 from django.core.exceptions import ValidationError
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.decorators.http import require_POST
+from django.urls import reverse_lazy
 
 # Create your views here.
 def test(request):
@@ -54,6 +58,19 @@ def signup(request):
         return redirect('login-page')
         
     return render(request, 'blog/signup.html')
+
+class PostListView(ListView):
+    model = Post
+    template_name = 'blog/home.html'
+    context_object_name = 'posts'
+    ordering = ['-date_posted']
+    paginate_by = 5
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['liked_posts'] = Post.objects.filter(likes=self.request.user).values_list('id', flat=True)
+        return context
 
 @login_required
 def home(request):
@@ -320,3 +337,21 @@ def profile_view(request, username):
         'posts': posts,
     }
     return render(request, 'blog/user_profile.html', context)
+
+@login_required
+@require_POST
+def like_post(request):
+    post_id = request.POST.get('post_id')
+    post = get_object_or_404(Post, id=post_id)
+    
+    if post.likes.filter(id=request.user.id).exists():
+        post.likes.remove(request.user)
+        liked = False
+    else:
+        post.likes.add(request.user)
+        liked = True
+    
+    return JsonResponse({
+        'liked': liked,
+        'likes_count': post.total_likes()
+    })

@@ -118,6 +118,15 @@
                     {% endif %}
                     
                     <p class="card-text post-content">{{ post.content|truncatewords:50 }}</p>
+
+                    <div class="d-flex align-items-center mt-3">
+                        <button class="btn btn-like {% if post.id in liked_posts %}liked{% endif %}" 
+                                data-post-id="{{ post.id }}"
+                                onclick="likePost(this, '{{ csrf_token }}')">
+                            <i class="fas fa-heart"></i>
+                            <span class="likes-count ms-1">{{ post.total_likes }}</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -289,6 +298,31 @@ function showPostModal(postId) {
     const modalId = `postModal${postId}`;
     const modal = new bootstrap.Modal(document.getElementById(modalId));
     modal.show();
+}
+
+function likePost(button, csrfToken) {
+    const postId = button.dataset.postId;
+    
+    fetch('/like/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken
+        },
+        body: `post_id=${postId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Update like button state
+        if (data.liked) {
+            button.classList.add('liked');
+        } else {
+            button.classList.remove('liked');
+        }
+        // Update likes count
+        button.querySelector('.likes-count').textContent = data.likes_count;
+    })
+    .catch(error => console.error('Error:', error));
 }
 </script>
 {% endblock %}
