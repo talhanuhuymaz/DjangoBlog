@@ -1,0 +1,125 @@
+{% extends 'blog/base.html' %}
+{% block title %}{{ profile_user.username }}'s Profile{% endblock %}
+{% block content %}
+{% load static %}
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-light sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="/home/">
+            <i class="fas fa-blog"></i> BlogSpace
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <div class="navbar-nav ms-auto">
+                <button onclick="toggleTheme()" class="theme-toggle" title="Toggle theme">
+                    <i id="theme-icon" class="fas fa-moon"></i>
+                </button>
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle me-2"></i>
+                        {{ user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="/profile/"><i class="fas fa-user me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="/myposts/"><i class="fas fa-file-alt me-2"></i>My Posts</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="POST" action="/signout/" class="dropdown-item p-0">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Sign Out</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- User Profile Section -->
+<div class="custom-container py-4">
+    <div class="row">
+        <!-- Profile Information -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <!-- Profile Picture -->
+                    {% if profile_user.profile.avatar %}
+                        <img src="{{ profile_user.profile.avatar.url }}" 
+                             alt="Profile Picture" 
+                             class="rounded-circle img-fluid mb-3 shadow-sm"
+                             style="width: 150px; height: 150px; object-fit: cover;">
+                    {% elif profile_user.profile.selected_avatar %}
+                        <div class="rounded-circle mx-auto mb-3 shadow-sm"
+                             style="width: 150px; height: 150px; background-color: {{ profile_user.profile.selected_avatar_color }}; display: flex; align-items: center; justify-content: center;">
+                            <i class="{{ profile_user.profile.selected_avatar }} fa-3x text-white"></i>
+                        </div>
+                    {% else %}
+                        <div class="rounded-circle mx-auto mb-3 shadow-sm"
+                             style="width: 150px; height: 150px; background-color: #4F46E5; display: flex; align-items: center; justify-content: center;">
+                            <span style="font-size: 64px; color: white;">{{ profile_user.username.0|upper }}</span>
+                        </div>
+                    {% endif %}
+
+                    <!-- Profile Info -->
+                    <h3 class="mb-2">{{ profile_user.username }}</h3>
+                    <p class="text-muted mb-3">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Joined {{ profile_user.date_joined|date:"F Y" }}
+                    </p>
+                    
+                    <!-- Stats -->
+                    <div class="row g-0 border-top pt-3">
+                        <div class="col">
+                            <h5 class="mb-0">{{ posts.count }}</h5>
+                            <small class="text-muted">Posts</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User's Posts -->
+        <div class="col-md-8">
+            <h4 class="mb-4">
+                <i class="fas fa-file-alt me-2"></i>
+                Posts by {{ profile_user.username }}
+            </h4>
+
+            {% for post in posts %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{{ post.title }}</h5>
+                    <p class="text-muted small">
+                        <i class="fas fa-clock me-1"></i>
+                        Posted on {{ post.date_posted|date:"F d, Y" }}
+                    </p>
+                    
+                    {% if post.image %}
+                    <img src="{{ post.image.url }}" 
+                         alt="Post image" 
+                         class="img-fluid rounded mb-3"
+                         style="max-height: 300px; width: 100%; object-fit: cover;">
+                    {% endif %}
+                    
+                    <p class="card-text">{{ post.content }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                    <h5>No Posts Yet</h5>
+                    <p class="text-muted mb-0">{{ profile_user.username }} hasn't shared any posts.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %} 
