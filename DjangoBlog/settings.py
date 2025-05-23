@@ -20,13 +20,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
-
-# Ensure static directory exists
-os.makedirs(os.path.join(BASE_DIR, 'static'), exist_ok=True)
-os.makedirs(STATIC_ROOT, exist_ok=True)
 
 # Security settings
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
@@ -73,4 +66,5 @@ DATABASES = {
     )
 }
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage' 
+# Simplified static file serving with WhiteNoise
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage' 
