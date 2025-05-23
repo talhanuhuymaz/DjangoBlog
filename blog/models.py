@@ -24,14 +24,16 @@ class Post(models.Model):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    avatar = models.ImageField(upload_to='profile_images/', null=True, blank=True, default='profile_images/default.png')
+    avatar = models.ImageField(upload_to='profile_images/', null=True, blank=True)
+    selected_avatar = models.CharField(max_length=50, null=True, blank=True)
+    selected_avatar_color = models.CharField(max_length=7, default='#4F46E5')
 
     def __str__(self):
         return f'{self.user.username} Profile'
 
     def delete(self, *args, **kwargs):
         # Delete the image file when the profile is deleted
-        if self.avatar and self.avatar.name != 'profile_images/default.png':
+        if self.avatar:
             self.avatar.delete()
         super().delete(*args, **kwargs)
 
