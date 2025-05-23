@@ -1,14 +1,18 @@
 #!/bin/bash
 set -o errexit
 
-# Install python dependencies
+echo "Installing dependencies..."
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 
-# Create staticfiles directory
+echo "Creating staticfiles directory..."
 mkdir -p staticfiles
 
-# Run migrations
-python manage.py migrate
+echo "Running migrations..."
+python manage.py migrate --noinput
 
-# Collect static files
-python manage.py collectstatic --no-input --clear 
+echo "Collecting static files..."
+python manage.py collectstatic --noinput --clear
+
+echo "Creating superuser..."
+python manage.py createsuperuser --noinput || true 
