@@ -14,10 +14,6 @@ from pathlib import Path
 import os
 import dj_database_url
 from django.core.management.utils import get_random_secret_key
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -159,21 +155,14 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Cloudinary configuration
-cloudinary_cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME')
-cloudinary_api_key = os.environ.get('CLOUDINARY_API_KEY')
-cloudinary_api_secret = os.environ.get('CLOUDINARY_API_SECRET')
-
-if all([cloudinary_cloud_name, cloudinary_api_key, cloudinary_api_secret]):
+if not DEBUG:
+    # Use Cloudinary in production
     CLOUDINARY_STORAGE = {
-        'CLOUD_NAME': cloudinary_cloud_name,
-        'API_KEY': cloudinary_api_key,
-        'API_SECRET': cloudinary_api_secret
+        'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+        'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+        'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET')
     }
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    print(f"Cloudinary configured with cloud name: {cloudinary_cloud_name}")
-else:
-    print("WARNING: Cloudinary credentials missing, falling back to local storage")
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
