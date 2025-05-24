@@ -44,7 +44,42 @@
         .navbar {
             background-color: var(--card-background) !important;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 1rem 2rem;
+            padding: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0.5rem;
+            }
+            
+            .navbar-brand {
+                font-size: 1.25rem;
+            }
+
+            .navbar .container {
+                padding: 0.5rem;
+            }
+
+            .navbar-collapse {
+                background-color: var(--card-background);
+                padding: 1rem;
+                border-radius: 0.5rem;
+                margin-top: 0.5rem;
+            }
+
+            .nav-link {
+                padding: 0.75rem 1rem !important;
+                border-radius: 0.5rem;
+            }
+
+            .theme-toggle {
+                margin: 0.5rem 0;
+            }
+
+            .dropdown-menu {
+                margin-top: 0.5rem !important;
+                width: 100%;
+            }
         }
 
         .navbar-brand {
@@ -87,6 +122,20 @@
             color: var(--text-color);
         }
 
+        @media (max-width: 768px) {
+            .card {
+                margin-bottom: 1rem;
+            }
+
+            .card-body {
+                padding: 1rem;
+            }
+
+            .custom-container {
+                padding: 1rem;
+            }
+        }
+
         .card:hover {
             transform: translateY(-5px);
         }
@@ -104,6 +153,12 @@
             border: 1px solid var(--border-color);
             background-color: var(--card-background);
             color: var(--text-color);
+        }
+
+        @media (max-width: 768px) {
+            .form-control {
+                font-size: 16px; /* Prevents iOS zoom on input focus */
+            }
         }
 
         .form-control:focus {
@@ -192,133 +247,53 @@
         .modal-content {
             background-color: var(--card-background);
             color: var(--text-color);
-        }
-
-        .modal-header {
-            border-bottom-color: var(--border-color);
-        }
-
-        .modal-footer {
-            border-top-color: var(--border-color);
-        }
-
-        /* Text colors */
-        .text-muted {
-            color: #64748b !important;
-        }
-
-        [data-bs-theme="dark"] .text-muted {
-            color: #94a3b8 !important;
-        }
-
-        /* Input placeholder color */
-        ::placeholder {
-            color: #64748b !important;
-        }
-
-        [data-bs-theme="dark"] ::placeholder {
-            color: #94a3b8 !important;
-        }
-
-        /* Post content styling */
-        .post-content {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            font-family: inherit;
-            line-height: 1.6;
-            color: var(--text-color);
-        }
-
-        .post-content p {
-            margin-bottom: 1rem;
-        }
-
-        /* Card title styling */
-        .card-title {
-            font-weight: 600;
-            color: var(--text-color);
-            margin-bottom: 1rem;
-        }
-
-        /* Avatar styles */
-        .post-avatar {
-            width: 40px;
-            height: 40px;
-            font-size: 1.2rem;
-        }
-
-        .post-avatar-image {
-            width: 40px;
-            height: 40px;
-            object-fit: cover;
-        }
-
-        .post-avatar-icon {
-            width: 40px;
-            height: 40px;
-            font-size: 1.2rem;
-            color: white;
-        }
-
-        .avatar-circle {
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Large profile avatar */
-        .profile-avatar {
-            width: 150px;
-            height: 150px;
-            font-size: 60px;
-        }
-
-        .profile-avatar-image {
-            width: 150px;
-            height: 150px;
-            object-fit: cover;
-        }
-
-        .profile-avatar-icon {
-            width: 150px;
-            height: 150px;
-            font-size: 60px;
-            color: white;
-        }
-
-        /* Dynamic avatar background color */
-        .avatar-dynamic-bg {
-            background-color: var(--avatar-bg-color, #4F46E5);
-        }
-
-        .post-card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        
-        .post-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
-        }
-        
-        .modal-content {
-            border: none;
             border-radius: 1rem;
         }
-        
-        .modal-dialog-centered.modal-xl {
-            max-width: 90%;
-        }
-        
-        @media (min-width: 1200px) {
-            .modal-dialog-centered.modal-xl {
-                max-width: 1140px;
+
+        @media (max-width: 768px) {
+            .modal-dialog {
+                margin: 0.5rem;
+            }
+
+            .modal-content {
+                border-radius: 0.75rem;
+            }
+
+            .modal-body {
+                padding: 1rem;
+            }
+
+            .modal-footer {
+                padding: 0.75rem;
             }
         }
-        
-        .post-content {
-            white-space: pre-line;
-            line-height: 1.6;
+
+        /* Image responsiveness */
+        .img-fluid {
+            max-width: 100%;
+            height: auto;
+        }
+
+        @media (max-width: 768px) {
+            .post-image-container img {
+                max-height: 50vh !important;
+            }
+        }
+
+        /* Form improvements for mobile */
+        @media (max-width: 768px) {
+            .input-group {
+                flex-wrap: nowrap;
+            }
+
+            .input-group > .form-control {
+                width: auto;
+                flex: 1;
+            }
+
+            .btn {
+                white-space: nowrap;
+            }
         }
     </style>
 </head>

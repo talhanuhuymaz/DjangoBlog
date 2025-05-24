@@ -46,7 +46,7 @@
     <div class="row justify-content-center">
         <div class="col-12 col-lg-8">
             <div class="card border-0 shadow-sm">
-                <div class="card-body p-4 p-sm-5">
+                <div class="card-body p-4">
                     <h2 class="card-title text-center mb-4">
                         <i class="fas fa-user-circle text-primary me-2"></i>Profile Settings
                     </h2>
@@ -61,116 +61,77 @@
                         </div>
                     </div>
 
-                    <form method="POST" enctype="multipart/form-data">
+                    <form method="POST" enctype="multipart/form-data" class="profile-form">
                         {% csrf_token %}
+                        
+                        <!-- Profile Picture Section -->
                         <div class="text-center mb-4">
-                            <div class="avatar-container mb-3">
+                            <div class="avatar-preview mb-3">
                                 {% if user.profile.avatar %}
                                     <img src="{{ user.profile.avatar.url }}" 
                                          alt="Profile Avatar" 
-                                         class="avatar-circle profile-avatar-image shadow-sm d-block mx-auto">
+                                         class="rounded-circle mx-auto d-block shadow-sm"
+                                         style="width: 150px; height: 150px; object-fit: cover;">
                                 {% elif user.profile.selected_avatar %}
-                                    <div class="avatar-circle profile-avatar-icon avatar-dynamic-bg shadow-sm mx-auto"
-                                         style="--avatar-bg-color: {{ user.profile.selected_avatar_color }}">
-                                        <i class="{{ user.profile.selected_avatar }}"></i>
+                                    <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center shadow-sm"
+                                         style="width: 150px; height: 150px; background-color: {{ user.profile.selected_avatar_color }};">
+                                        <i class="{{ user.profile.selected_avatar }} text-white" style="font-size: 3rem;"></i>
                                     </div>
                                 {% else %}
-                                    <div class="avatar-circle profile-avatar bg-primary text-white shadow-sm mx-auto">
-                                        {{ user.username|make_list|first|upper }}
+                                    <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center bg-primary text-white shadow-sm"
+                                         style="width: 150px; height: 150px;">
+                                        <span style="font-size: 3rem;">{{ user.username|make_list|first|upper }}</span>
                                     </div>
                                 {% endif %}
                             </div>
                             
-                            <!-- Avatar Selection -->
                             <div class="mb-4">
-                                <label class="form-label d-block">Choose Avatar Style</label>
-                                <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
-                                    {% for avatar in default_avatars %}
-                                    <div class="avatar-option">
-                                        <input type="radio" 
-                                               class="btn-check" 
-                                               name="selected_avatar" 
-                                               id="avatar{{ forloop.counter }}" 
-                                               value="{{ avatar.icon }}"
-                                               {% if user.profile.selected_avatar == avatar.icon %}checked{% endif %}>
-                                        <label class="btn btn-outline-primary rounded-circle p-3" 
-                                               for="avatar{{ forloop.counter }}"
-                                               style="width: 60px; height: 60px;">
-                                            <i class="{{ avatar.icon }}"></i>
-                                        </label>
-                                        <small class="d-block mt-1 text-muted">{{ avatar.name }}</small>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                                
-                                <div class="text-center">
-                                    <p class="text-muted mb-2">- OR -</p>
-                                    <label for="avatarUpload" class="form-label">Upload Custom Picture</label>
-                                    <input type="file" 
-                                           class="form-control bg-light border-0" 
-                                           id="avatarUpload" 
-                                           name="avatar" 
-                                           accept="image/*">
-                                    <div class="form-text">Maximum file size: 2MB</div>
+                                <label for="avatar" class="form-label">Change Profile Picture</label>
+                                <input type="file" class="form-control" id="avatar" name="avatar" accept="image/*">
+                            </div>
+                        </div>
+
+                        <!-- Profile Information -->
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+                                    <label for="username">Username</label>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="username" class="form-label">Username</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-0">
-                                    <i class="fas fa-user text-muted"></i>
-                                </span>
-                                <input type="text" 
-                                       class="form-control bg-light border-0 ps-2" 
-                                       id="username" 
-                                       name="username" 
-                                       value="{{ user.username }}" 
-                                       required>
+                            <div class="col-12 col-md-6">
+                                <div class="form-floating">
+                                    <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                                    <label for="email">Email</label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <input type="password" class="form-control" id="current_password" name="current_password" required>
+                                    <label for="current_password">Current Password</label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="form-floating">
+                                    <input type="password" class="form-control" id="new_password" name="new_password">
+                                    <label for="new_password">New Password (optional)</label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="form-floating">
+                                    <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+                                    <label for="confirm_password">Confirm New Password</label>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="mb-4">
-                            <label for="email" class="form-label">Email</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-0">
-                                    <i class="fas fa-envelope text-muted"></i>
-                                </span>
-                                <input type="email" 
-                                       class="form-control bg-light border-0 ps-2" 
-                                       id="email" 
-                                       name="email" 
-                                       value="{{ user.email }}" 
-                                       required>
-                            </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="password" class="form-label">Current Password</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-0">
-                                    <i class="fas fa-lock text-muted"></i>
-                                </span>
-                                <input type="password" 
-                                       class="form-control bg-light border-0 ps-2" 
-                                       id="password" 
-                                       name="password" 
-                                       placeholder="Enter current password to save changes"
-                                       required>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save me-2"></i>Save Changes
                             </button>
-                            <button type="button" 
-                                    class="btn btn-outline-danger" 
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#changePasswordModal">
-                                <i class="fas fa-key me-2"></i>Change Password
-                            </button>
+                            <a href="/home/" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Home
+                            </a>
                         </div>
                     </form>
                 </div>
@@ -190,67 +151,37 @@
     </div>
 </div>
 
-<!-- Change Password Modal -->
-<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0">
-            <div class="modal-header">
-                <h5 class="modal-title" id="changePasswordModalLabel">
-                    <i class="fas fa-key text-primary me-2"></i>Change Password
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form method="POST" action="/change_password/">
-                    {% csrf_token %}
-                    <div class="mb-4">
-                        <label for="currentPassword" class="form-label">Current Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-0">
-                                <i class="fas fa-lock text-muted"></i>
-                            </span>
-                            <input type="password" 
-                                   class="form-control bg-light border-0 ps-2" 
-                                   id="currentPassword" 
-                                   name="current_password" 
-                                   required>
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <label for="newPassword" class="form-label">New Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-0">
-                                <i class="fas fa-key text-muted"></i>
-                            </span>
-                            <input type="password" 
-                                   class="form-control bg-light border-0 ps-2" 
-                                   id="newPassword" 
-                                   name="new_password" 
-                                   required>
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <label for="confirmPassword" class="form-label">Confirm New Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-0">
-                                <i class="fas fa-check text-muted"></i>
-                            </span>
-                            <input type="password" 
-                                   class="form-control bg-light border-0 ps-2" 
-                                   id="confirmPassword" 
-                                   name="confirm_password" 
-                                   required>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-end">
-                        <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-2"></i>Update Password
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+<style>
+@media (max-width: 768px) {
+    .custom-container {
+        padding: 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem !important;
+    }
+    
+    .profile-form {
+        padding: 0;
+    }
+    
+    .form-floating {
+        margin-bottom: 1rem;
+    }
+    
+    .form-floating > label {
+        font-size: 0.9rem;
+    }
+    
+    .form-control {
+        font-size: 16px;
+    }
+    
+    .alert {
+        margin: 1rem 0;
+        padding: 0.75rem;
+    }
+}
+</style>
+
 {% endblock %} 
