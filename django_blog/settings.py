@@ -159,17 +159,21 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Cloudinary configuration
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET')
-}
+cloudinary_cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME')
+cloudinary_api_key = os.environ.get('CLOUDINARY_API_KEY')
+cloudinary_api_secret = os.environ.get('CLOUDINARY_API_SECRET')
 
-# Print Cloudinary configuration status (temporary for debugging)
-if not all([CLOUDINARY_STORAGE['CLOUD_NAME'], CLOUDINARY_STORAGE['API_KEY'], CLOUDINARY_STORAGE['API_SECRET']]):
-    print("WARNING: Cloudinary credentials are not properly set in environment variables!")
-
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+if all([cloudinary_cloud_name, cloudinary_api_key, cloudinary_api_secret]):
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': cloudinary_cloud_name,
+        'API_KEY': cloudinary_api_key,
+        'API_SECRET': cloudinary_api_secret
+    }
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    print(f"Cloudinary configured with cloud name: {cloudinary_cloud_name}")
+else:
+    print("WARNING: Cloudinary credentials missing, falling back to local storage")
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
