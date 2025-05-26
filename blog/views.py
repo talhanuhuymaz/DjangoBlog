@@ -326,34 +326,39 @@ def change_password(request):
     return redirect('profile')
 
 def profile_view(request, username):
-    user = get_object_or_404(User, username=username)
-    
-    # Ensure user has a profile
     try:
-        profile = user.profile
-    except Profile.DoesNotExist:
-        # Create profile if it doesn't exist
-        Profile.objects.create(user=user)
-    
-    posts = Post.objects.filter(author=user).order_by('-date_posted')
-    
-    # Get followers and following counts
-    followers_count = user.followers.count()
-    following_count = user.profile.following.count()
-    
-    # Get liked posts for the current user
-    liked_posts = []
-    if request.user.is_authenticated:
-        liked_posts = Post.objects.filter(likes=request.user).values_list('id', flat=True)
-    
-    context = {
-        'profile_user': user,
-        'posts': posts,
-        'followers_count': followers_count,
-        'following_count': following_count,
-        'liked_posts': liked_posts,
-    }
-    return render(request, 'blog/user_profile.html', context)
+        user = get_object_or_404(User, username=username)
+        
+        # Ensure user has a profile
+        try:
+            profile = user.profile
+        except Profile.DoesNotExist:
+            # Create profile if it doesn't exist
+            profile = Profile.objects.create(user=user)
+        
+        posts = Post.objects.filter(author=user).order_by('-date_posted')
+        
+        # Get followers and following counts
+        followers_count = user.followers.count()
+        following_count = user.profile.following.count()
+        
+        # Get liked posts for the current user
+        liked_posts = []
+        if request.user.is_authenticated:
+            liked_posts = Post.objects.filter(likes=request.user).values_list('id', flat=True)
+        
+        context = {
+            'profile_user': user,
+            'posts': posts,
+            'followers_count': followers_count,
+            'following_count': following_count,
+            'liked_posts': liked_posts,
+        }
+        return render(request, 'blog/user_profile.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error loading profile: {str(e)}')
+        return redirect('home-page')
 
 @login_required
 @require_POST
@@ -449,35 +454,56 @@ def delete_comment(request, comment_id):
 
 @login_required
 def toggle_follow(request, username):
-    user_to_follow = get_object_or_404(User, username=username)
-    
-    if request.user == user_to_follow:
+    try:
+        user_to_follow = get_object_or_404(User, username=username)
+        
+        if request.user == user_to_follow:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'status': 'error',
+                    'message': "You cannot follow yourself!"
+                }, status=400)
+            messages.error(request, "You cannot follow yourself!")
+            return redirect('home')
+        
+        # Ensure both users have profiles
+        try:
+            request.user.profile
+        except Profile.DoesNotExist:
+            Profile.objects.create(user=request.user)
+            
+        try:
+            user_to_follow.profile
+        except Profile.DoesNotExist:
+            Profile.objects.create(user=user_to_follow)
+        
+        is_following = user_to_follow in request.user.profile.following.all()
+        if is_following:
+            request.user.profile.following.remove(user_to_follow)
+            message = f"You have unfollowed {user_to_follow.username}"
+        else:
+            request.user.profile.following.add(user_to_follow)
+            message = f"You are now following {user_to_follow.username}"
+        
+        # If the request is AJAX, return JSON response
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'status': 'success',
+                'message': message,
+                'is_following': not is_following,  # Toggle the state
+                'followers_count': user_to_follow.followers.count(),
+                'following_count': user_to_follow.profile.following.count()
+            })
+        
+        # Otherwise show message and redirect
+        messages.success(request, message)
+        return redirect(request.META.get('HTTP_REFERER', 'home'))
+        
+    except Exception as e:
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
                 'status': 'error',
-                'message': "You cannot follow yourself!"
-            }, status=400)
-        messages.error(request, "You cannot follow yourself!")
-        return redirect('home')
-    
-    is_following = user_to_follow in request.user.profile.following.all()
-    if is_following:
-        request.user.profile.following.remove(user_to_follow)
-        message = f"You have unfollowed {user_to_follow.username}"
-    else:
-        request.user.profile.following.add(user_to_follow)
-        message = f"You are now following {user_to_follow.username}"
-    
-    # If the request is AJAX, return JSON response
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return JsonResponse({
-            'status': 'success',
-            'message': message,
-            'is_following': not is_following,  # Toggle the state
-            'followers_count': user_to_follow.followers.count(),
-            'following_count': user_to_follow.profile.following.count()
-        })
-    
-    # Otherwise show message and redirect
-    messages.success(request, message)
-    return redirect(request.META.get('HTTP_REFERER', 'home'))
+                'message': str(e)
+            }, status=500)
+        messages.error(request, f'Error following user: {str(e)}')
+        return redirect('home-page')

@@ -252,8 +252,32 @@ function toggleFollow(button, csrfToken) {
                 followingCount.textContent = data.following_count;
             }
             
-            // Reload the modals to update the lists
-            location.reload();
+            // Update the modal content without page reload
+            const followersModal = document.querySelector('#followersModal .modal-body');
+            const followingModal = document.querySelector('#followingModal .modal-body');
+            
+            // Re-fetch the current page content
+            fetch(window.location.href)
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    // Update modals content
+                    if (followersModal) {
+                        const newFollowersContent = doc.querySelector('#followersModal .modal-body');
+                        if (newFollowersContent) {
+                            followersModal.innerHTML = newFollowersContent.innerHTML;
+                        }
+                    }
+                    if (followingModal) {
+                        const newFollowingContent = doc.querySelector('#followingModal .modal-body');
+                        if (newFollowingContent) {
+                            followingModal.innerHTML = newFollowingContent.innerHTML;
+                        }
+                    }
+                })
+                .catch(error => console.error('Error updating modals:', error));
         }
     })
     .catch(error => console.error('Error:', error));
