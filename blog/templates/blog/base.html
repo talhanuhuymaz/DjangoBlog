@@ -483,6 +483,85 @@
                 height: 90vh;
                 border-radius: 1rem 1rem 0 0;
             }
+
+            /* Notification Styles for Mobile */
+            .notifications-dropdown {
+                position: fixed !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                top: auto !important;
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0;
+                padding: 0;
+                border-radius: 1rem 1rem 0 0;
+                max-height: 80vh;
+                transform: none !important;
+            }
+
+            .notifications-dropdown .dropdown-menu-content {
+                max-height: 70vh;
+                overflow-y: auto;
+                padding: 1rem;
+            }
+
+            .notifications-dropdown .dropdown-header {
+                position: sticky;
+                top: 0;
+                background-color: var(--card-background);
+                z-index: 1030;
+                padding: 1rem;
+                border-bottom: 1px solid var(--border-color);
+                border-radius: 1rem 1rem 0 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .notifications-dropdown .dropdown-item {
+                padding: 1rem;
+                border-bottom: 1px solid var(--border-color);
+                white-space: normal;
+            }
+
+            .notifications-dropdown .dropdown-item:last-child {
+                border-bottom: none;
+            }
+
+            /* New Post Button Styles for Mobile */
+            .new-post-btn-mobile {
+                position: fixed;
+                bottom: 1rem;
+                right: 1rem;
+                z-index: 1020;
+                width: 56px;
+                height: 56px;
+                border-radius: 50%;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.5rem;
+            }
+
+            .new-post-btn-mobile:active {
+                transform: scale(0.95);
+            }
+
+            .new-post-btn-desktop {
+                display: none;
+            }
+
+            /* Hide desktop new post button on mobile */
+            .desktop-new-post {
+                display: none;
+            }
+
+            /* Show mobile new post button */
+            .mobile-new-post {
+                display: block;
+            }
         }
 
         /* Small mobile devices */

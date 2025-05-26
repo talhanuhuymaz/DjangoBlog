@@ -31,12 +31,17 @@
         </li>
     </ul>
 
-    <!-- New Post Button -->
-    <div class="text-center mb-4">
+    <!-- Desktop New Post Button -->
+    <div class="text-center mb-4 desktop-new-post">
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newPostModal">
             <i class="fas fa-plus me-2"></i>New Post
         </button>
     </div>
+
+    <!-- Mobile New Post Button (Floating Action Button) -->
+    <button type="button" class="btn btn-primary new-post-btn-mobile d-md-none" data-bs-toggle="modal" data-bs-target="#newPostModal">
+        <i class="fas fa-plus"></i>
+    </button>
 
     <!-- Posts -->
     <div class="row g-4">
