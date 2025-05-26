@@ -5,6 +5,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blog - {% block title %}Home{% endblock %}</title>
+    
+    <!-- Prevent theme flash -->
+    <script>
+        // Immediately set the theme before page loads
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+            // Add a class to prevent any transition effects during page load
+            document.documentElement.classList.add('theme-transition-disabled');
+            // Remove the class after a small delay to re-enable transitions
+            window.addEventListener('load', function() {
+                setTimeout(function() {
+                    document.documentElement.classList.remove('theme-transition-disabled');
+                }, 50);
+            });
+        })();
+    </script>
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -13,6 +31,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
+        /* Disable transitions during theme change */
+        .theme-transition-disabled * {
+            transition: none !important;
+        }
+
         :root {
             --primary-color: #2563eb;
             --secondary-color: #1e40af;
@@ -431,11 +454,11 @@
                 margin: 0;
                 max-width: 100%;
                 height: 100vh;
-            }
-
-            .modal-content {
+        }
+        
+        .modal-content {
                 height: 100vh;
-                border: none;
+            border: none;
                 border-radius: 0;
             }
 
@@ -520,13 +543,35 @@
             }
 
             .notifications-dropdown .dropdown-item {
-                padding: 1rem;
+                padding: 0.75rem 1rem;
                 border-bottom: 1px solid var(--border-color);
-                white-space: normal;
+                cursor: default;
+                transition: background-color 0.2s ease;
+            }
+
+            .notifications-dropdown .dropdown-item:hover {
+                background-color: var(--hover-color);
+                color: var(--text-color);
+            }
+
+            .notifications-dropdown .dropdown-item.fw-bold {
+                background-color: rgba(var(--bs-primary-rgb), 0.05);
             }
 
             .notifications-dropdown .dropdown-item:last-child {
                 border-bottom: none;
+            }
+
+            .notifications-dropdown small.text-muted {
+                display: block;
+                margin-top: 0.25rem;
+                font-size: 0.75rem;
+            }
+
+            .notifications-dropdown .fa-heart,
+            .notifications-dropdown .fa-user-plus {
+                width: 20px;
+                text-align: center;
             }
 
             /* New Post Button Styles for Mobile */
@@ -676,7 +721,6 @@
     <script>
         // Theme toggle functionality
         document.addEventListener('DOMContentLoaded', function() {
-            // Check for saved theme preference
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-bs-theme', savedTheme);
             updateThemeIcons(savedTheme);
@@ -687,9 +731,18 @@
             const currentTheme = html.getAttribute('data-bs-theme');
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
             
+            // Temporarily disable transitions
+            html.classList.add('theme-transition-disabled');
+            
+            // Update theme
             html.setAttribute('data-bs-theme', newTheme);
             localStorage.setItem('theme', newTheme);
             updateThemeIcons(newTheme);
+            
+            // Re-enable transitions after a small delay
+            setTimeout(() => {
+                html.classList.remove('theme-transition-disabled');
+            }, 50);
         }
 
         function updateThemeIcons(theme) {
@@ -723,24 +776,28 @@
                     }
                     
                     data.notifications.forEach(notification => {
-                        const item = document.createElement('a');
+                        const item = document.createElement('div');
                         item.className = `dropdown-item ${notification.is_read ? 'text-muted' : 'fw-bold'}`;
                         
                         if (notification.type === 'like') {
-                            item.href = `/?post=${notification.post_id}`;
                             item.innerHTML = `
-                                <i class="fas fa-heart text-danger me-2"></i>
-                                <strong>${notification.sender}</strong> liked your post "${notification.post_title}"
-                                <br>
-                                <small class="text-muted">${notification.created_at}</small>
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-heart text-danger me-2 mt-1"></i>
+                                    <div>
+                                        <div><strong>${notification.sender}</strong> liked your post "${notification.post_title}"</div>
+                                        <small class="text-muted">${notification.created_at}</small>
+                                    </div>
+                                </div>
                             `;
                         } else if (notification.type === 'follow') {
-                            item.href = `/profile/${notification.sender}/`;
                             item.innerHTML = `
-                                <i class="fas fa-user-plus text-primary me-2"></i>
-                                <strong>${notification.sender}</strong> started following you
-                                <br>
-                                <small class="text-muted">${notification.created_at}</small>
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-user-plus text-primary me-2 mt-1"></i>
+                                    <div>
+                                        <div><strong>${notification.sender}</strong> started following you</div>
+                                        <small class="text-muted">${notification.created_at}</small>
+                                    </div>
+                                </div>
                             `;
                         }
                         
