@@ -1,9 +1,9 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from blog.models import UserProfile
+from blog.models import Profile
 
 class Command(BaseCommand):
-    help = 'Creates UserProfile objects for users that do not have one'
+    help = 'Creates Profile objects for users that do not have one'
 
     def handle(self, *args, **options):
         users_without_profile = []
@@ -13,12 +13,12 @@ class Command(BaseCommand):
             try:
                 # Try to access the profile
                 profile = user.profile
-            except UserProfile.DoesNotExist:
+            except Profile.DoesNotExist:
                 users_without_profile.append(user)
         
         # Create profiles for users without one
         for user in users_without_profile:
-            UserProfile.objects.create(user=user)
+            Profile.objects.create(user=user)
             self.stdout.write(self.style.SUCCESS(f'Created profile for user: {user.username}'))
         
         if not users_without_profile:

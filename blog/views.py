@@ -327,17 +327,31 @@ def change_password(request):
 
 def profile_view(request, username):
     user = get_object_or_404(User, username=username)
+    
+    # Ensure user has a profile
+    try:
+        profile = user.profile
+    except Profile.DoesNotExist:
+        # Create profile if it doesn't exist
+        Profile.objects.create(user=user)
+    
     posts = Post.objects.filter(author=user).order_by('-date_posted')
     
     # Get followers and following counts
     followers_count = user.followers.count()
     following_count = user.profile.following.count()
     
+    # Get liked posts for the current user
+    liked_posts = []
+    if request.user.is_authenticated:
+        liked_posts = Post.objects.filter(likes=request.user).values_list('id', flat=True)
+    
     context = {
         'profile_user': user,
         'posts': posts,
         'followers_count': followers_count,
         'following_count': following_count,
+        'liked_posts': liked_posts,
     }
     return render(request, 'blog/user_profile.html', context)
 
@@ -459,7 +473,9 @@ def toggle_follow(request, username):
         return JsonResponse({
             'status': 'success',
             'message': message,
-            'is_following': not is_following  # Toggle the state
+            'is_following': not is_following,  # Toggle the state
+            'followers_count': user_to_follow.followers.count(),
+            'following_count': user_to_follow.profile.following.count()
         })
     
     # Otherwise show message and redirect

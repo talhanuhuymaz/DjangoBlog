@@ -1,1 +1,118 @@
- 
+<!-- Followers Modal -->
+<div class="modal fade" id="followersModal" tabindex="-1" aria-labelledby="followersModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="followersModalLabel">Followers</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="list-group list-group-flush">
+                    {% for follower in profile_user.followers.all %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            {% if follower.profile.avatar %}
+                            <img src="{{ follower.profile.avatar.url }}" 
+                                 alt="Profile Avatar" 
+                                 class="rounded-circle"
+                                 style="width: 40px; height: 40px; object-fit: cover;">
+                            {% else %}
+                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white bg-primary"
+                                 style="width: 40px; height: 40px;">
+                                {{ follower.username.0|upper }}
+                            </div>
+                            {% endif %}
+                            <a href="{% url 'user_profile' follower.username %}" class="ms-3 text-decoration-none">
+                                {{ follower.username }}
+                            </a>
+                        </div>
+                        {% if user != follower %}
+                        <button type="button" 
+                                class="btn btn-sm {% if follower in user.profile.following.all %}btn-outline-primary{% else %}btn-primary{% endif %} follow-button"
+                                data-username="{{ follower.username }}"
+                                onclick="toggleFollow(this, '{{ csrf_token }}')">
+                            <i class="fas {% if follower in user.profile.following.all %}fa-user-minus{% else %}fa-user-plus{% endif %} me-1"></i>
+                            <span class="follow-text">{% if follower in user.profile.following.all %}Unfollow{% else %}Follow{% endif %}</span>
+                        </button>
+                        {% endif %}
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center py-4">
+                        <p class="text-muted mb-0">No followers yet</p>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Following Modal -->
+<div class="modal fade" id="followingModal" tabindex="-1" aria-labelledby="followingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="followingModalLabel">Following</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="list-group list-group-flush">
+                    {% for following in profile_user.profile.following.all %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            {% if following.profile.avatar %}
+                            <img src="{{ following.profile.avatar.url }}" 
+                                 alt="Profile Avatar" 
+                                 class="rounded-circle"
+                                 style="width: 40px; height: 40px; object-fit: cover;">
+                            {% else %}
+                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white bg-primary"
+                                 style="width: 40px; height: 40px;">
+                                {{ following.username.0|upper }}
+                            </div>
+                            {% endif %}
+                            <a href="{% url 'user_profile' following.username %}" class="ms-3 text-decoration-none">
+                                {{ following.username }}
+                            </a>
+                        </div>
+                        {% if user != following %}
+                        <button type="button" 
+                                class="btn btn-sm {% if following in user.profile.following.all %}btn-outline-primary{% else %}btn-primary{% endif %} follow-button"
+                                data-username="{{ following.username }}"
+                                onclick="toggleFollow(this, '{{ csrf_token }}')">
+                            <i class="fas {% if following in user.profile.following.all %}fa-user-minus{% else %}fa-user-plus{% endif %} me-1"></i>
+                            <span class="follow-text">{% if following in user.profile.following.all %}Unfollow{% else %}Follow{% endif %}</span>
+                        </button>
+                        {% endif %}
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center py-4">
+                        <p class="text-muted mb-0">Not following anyone yet</p>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Update follow buttons in modals after follow/unfollow action
+function updateFollowButtons(username, isFollowing) {
+    document.querySelectorAll(`.follow-button[data-username="${username}"]`).forEach(btn => {
+        if (isFollowing) {
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-outline-primary');
+            btn.querySelector('i').classList.remove('fa-user-plus');
+            btn.querySelector('i').classList.add('fa-user-minus');
+            btn.querySelector('.follow-text').textContent = 'Unfollow';
+        } else {
+            btn.classList.remove('btn-outline-primary');
+            btn.classList.add('btn-primary');
+            btn.querySelector('i').classList.remove('fa-user-minus');
+            btn.querySelector('i').classList.add('fa-user-plus');
+            btn.querySelector('.follow-text').textContent = 'Follow';
+        }
+    });
+}
+</script> 
