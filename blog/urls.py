@@ -18,4 +18,6 @@ urlpatterns = [
     path('change_password/', views.change_password, name='change_password'),
     path('profile/<str:username>/', views.profile_view, name='user_profile'),
     path('like/', views.like_post, name='like-post'),
+    path('add_comment/<int:post_id>/', views.add_comment, name='add_comment'),
+    path('delete_comment/<int:comment_id>/', views.delete_comment, name='delete_comment'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

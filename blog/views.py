@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from .models import Post, UserProfile
+from .models import Post, UserProfile, Comment
 from django.conf import settings
 import os
 from django.core.exceptions import ValidationError
@@ -85,9 +85,15 @@ def home(request):
     else:
         posts = Post.objects.all().order_by('-date_posted')
     
+    # Get liked posts for the current user
+    liked_posts = []
+    if request.user.is_authenticated:
+        liked_posts = Post.objects.filter(likes=request.user).values_list('id', flat=True)
+    
     context = {
         'posts': posts,
-        'search_query': search_query
+        'search_query': search_query,
+        'liked_posts': liked_posts
     }
     return render(request, 'blog/home.html', context)
 
@@ -355,3 +361,34 @@ def like_post(request):
         'liked': liked,
         'likes_count': post.total_likes()
     })
+
+@login_required
+@require_POST
+def add_comment(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    content = request.POST.get('content')
+    
+    if content:
+        Comment.objects.create(
+            post=post,
+            author=request.user,
+            content=content
+        )
+        messages.success(request, 'Comment added successfully!')
+    else:
+        messages.error(request, 'Comment cannot be empty!')
+    
+    return redirect('home-page')
+
+@login_required
+@require_POST
+def delete_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    
+    if request.user == comment.author:
+        comment.delete()
+        messages.success(request, 'Comment deleted successfully!')
+    else:
+        messages.error(request, 'You can only delete your own comments!')
+    
+    return redirect('home-page')

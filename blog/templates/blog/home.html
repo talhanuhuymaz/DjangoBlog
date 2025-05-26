@@ -178,6 +178,68 @@
                                     </div>
                                     <h3 class="mb-4">{{ post.title }}</h3>
                                     <div class="post-content">{{ post.content }}</div>
+                                    
+                                    <!-- Comments Section -->
+                                    <div class="comments-section mt-4">
+                                        <h5 class="mb-3">Comments</h5>
+                                        
+                                        <!-- Comment Form -->
+                                        <form method="POST" action="{% url 'add_comment' post.id %}" class="mb-4">
+                                            {% csrf_token %}
+                                            <div class="input-group">
+                                                <textarea class="form-control" name="content" rows="2" placeholder="Add a comment..." required></textarea>
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="fas fa-paper-plane"></i>
+                                                </button>
+                                            </div>
+                                        </form>
+                                        
+                                        <!-- Comments List -->
+                                        <div class="comments-list">
+                                            {% for comment in post.comments.all %}
+                                            <div class="comment mb-3">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div class="d-flex align-items-center">
+                                                        {% if comment.author.profile.avatar %}
+                                                        <img src="{{ comment.author.profile.avatar.url }}" 
+                                                             alt="Profile Avatar" 
+                                                             class="avatar-circle comment-avatar-image shadow-sm"
+                                                             style="width: 32px; height: 32px;">
+                                                        {% elif comment.author.profile.selected_avatar %}
+                                                        <div class="avatar-circle comment-avatar-icon avatar-dynamic-bg shadow-sm"
+                                                             style="--avatar-bg-color: {{ comment.author.profile.selected_avatar_color }}; width: 32px; height: 32px;">
+                                                            <i class="{{ comment.author.profile.selected_avatar }}"></i>
+                                                        </div>
+                                                        {% else %}
+                                                        <div class="avatar-circle comment-avatar bg-primary text-white shadow-sm"
+                                                             style="width: 32px; height: 32px;">
+                                                            {{ comment.author.username|make_list|first|upper }}
+                                                        </div>
+                                                        {% endif %}
+                                                        <div class="ms-2">
+                                                            <div class="fw-semibold">{{ comment.author.username }}</div>
+                                                            <small class="text-muted">{{ comment.date_posted|date:"F d, Y" }}</small>
+                                                        </div>
+                                                    </div>
+                                                    {% if user == comment.author %}
+                                                    <form method="POST" action="{% url 'delete_comment' comment.id %}" class="ms-2">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-link text-danger p-0"
+                                                                onclick="return confirm('Are you sure you want to delete this comment?')">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="comment-content mt-2">
+                                                    {{ comment.content }}
+                                                </div>
+                                            </div>
+                                            {% empty %}
+                                            <p class="text-muted">No comments yet. Be the first to comment!</p>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
