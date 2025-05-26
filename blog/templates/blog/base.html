@@ -43,9 +43,8 @@
 
         .navbar {
             background-color: var(--card-background) !important;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1rem 2rem;
         }
 
         .navbar-brand {
@@ -54,39 +53,14 @@
             font-size: 1.5rem;
         }
 
-        .navbar .form-control {
-            min-width: 300px;
-            background-color: var(--background-color);
+        .nav-link {
+            color: var(--text-color) !important;
+            font-weight: 500;
+            transition: color 0.3s ease;
         }
 
-        .navbar .form-control:focus {
-            background-color: var(--background-color);
-        }
-
-        .navbar .nav-link {
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-        }
-
-        .navbar .nav-link:hover {
-            background-color: var(--hover-color);
-        }
-
-        .navbar-toggler {
-            padding: 0.5rem;
-            font-size: 1.25rem;
-            color: var(--text-color);
-            border-radius: 8px;
-            transition: all 0.2s ease;
-        }
-
-        .navbar-toggler:hover {
-            background-color: var(--hover-color);
-        }
-
-        .navbar-toggler:focus {
-            box-shadow: none;
+        .nav-link:hover {
+            color: var(--primary-color) !important;
         }
 
         .btn-primary {
@@ -467,33 +441,10 @@
                 font-size: 0.9rem;
             }
         }
-
-        @media (max-width: 992px) {
-            .navbar .form-control {
-                min-width: auto;
-            }
-
-            .navbar .dropdown-menu {
-                border: none;
-                background-color: transparent;
-                box-shadow: none;
-            }
-
-            .navbar .dropdown-item {
-                padding: 0.75rem 1rem;
-                border-radius: 8px;
-            }
-
-            .navbar .dropdown-item:hover {
-                background-color: var(--hover-color);
-            }
-        }
     </style>
 </head>
 
 <body>
-    {% include 'blog/includes/navbar.html' %}
-    
     <div class="container-fluid px-0">
         {% if messages %}
             <div class="container mt-3">
