@@ -219,4 +219,87 @@
 {% for post in explore_posts %}
 {% include "blog/post_card_modal.html" with post=post %}
 {% endfor %}
+
+<script>
+function showPostModal(postId) {
+    const modalId = `postModal${postId}`;
+    const modal = new bootstrap.Modal(document.getElementById(modalId));
+    modal.show();
+}
+
+function likePost(button, csrfToken) {
+    const postId = button.dataset.postId;
+    
+    fetch('/like/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken
+        },
+        body: `post_id=${postId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Update like button state
+        if (data.liked) {
+            button.classList.add('liked');
+        } else {
+            button.classList.remove('liked');
+        }
+        // Update likes count
+        button.querySelector('.likes-count').textContent = data.likes_count;
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+// Add active class to current tab based on URL hash and handle tab changes
+document.addEventListener('DOMContentLoaded', function() {
+    // Get the tab and post from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    const postId = urlParams.get('post');
+    
+    // Set initial active tab
+    const hash = tabParam ? `#${tabParam}` : (window.location.hash || '#following');
+    const tab = document.querySelector(`[data-bs-target="${hash}"]`);
+    if (tab) {
+        tab.click();
+    }
+
+    // Update hidden input when tabs change
+    const tabs = document.querySelectorAll('[data-bs-toggle="tab"]');
+    tabs.forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function (event) {
+            const activeTab = event.target.getAttribute('data-bs-target').replace('#', '');
+            document.getElementById('currentTab').value = activeTab;
+            
+            // Update URL with current tab
+            const url = new URL(window.location);
+            url.searchParams.set('tab', activeTab);
+            if (postId) {
+                url.searchParams.set('post', postId);
+            }
+            window.history.replaceState({}, '', url);
+        });
+    });
+
+    // Set initial value of currentTab
+    const activeTabId = document.querySelector('.nav-link.active').getAttribute('data-bs-target').replace('#', '');
+    document.getElementById('currentTab').value = activeTabId;
+
+    // Auto-open post modal if ?post=ID is present
+    if (postId) {
+        // Wait for modals to be in DOM
+        setTimeout(function() {
+            showPostModal(postId);
+            
+            // Update URL with current tab and post
+            const url = new URL(window.location);
+            url.searchParams.set('tab', activeTabId);
+            url.searchParams.set('post', postId);
+            window.history.replaceState({}, '', url);
+        }, 400);
+    }
+});
+</script>
 {% endblock %}
