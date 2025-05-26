@@ -200,7 +200,7 @@ function loadNotifications() {
         .catch(error => console.error('Error loading notifications:', error));
 }
 
-// Update markNotificationsRead to clear all badges
+// Mark notifications as read
 function markNotificationsRead() {
     fetch('{% url "mark_notifications_read" %}', {
         method: 'POST',
@@ -212,19 +212,32 @@ function markNotificationsRead() {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'success') {
-            updateNotificationBadges(0);
+            // Update the UI to show all notifications as read
             document.querySelectorAll('.notifications-list .dropdown-item').forEach(item => {
                 item.classList.add('text-muted');
                 item.classList.remove('fw-bold');
             });
+            // Hide the notification badges
+            updateNotificationBadges(0);
         }
     })
     .catch(error => console.error('Error marking notifications as read:', error));
 }
 
-// Load notifications on page load and every 30 seconds
+// Initialize notifications when the page loads
 document.addEventListener('DOMContentLoaded', function() {
+    // Load notifications immediately
     loadNotifications();
+    
+    // Set up auto-refresh every 30 seconds
     setInterval(loadNotifications, 30000);
+    
+    // Set up notification dropdowns to mark as read when opened
+    const dropdowns = document.querySelectorAll('#mobileNotificationsDropdown, #desktopNotificationsDropdown');
+    dropdowns.forEach(dropdown => {
+        dropdown.addEventListener('show.bs.dropdown', function() {
+            markNotificationsRead();
+        });
+    });
 });
 </script> 
