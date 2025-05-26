@@ -1,124 +1,328 @@
 {% extends 'blog/base.html' %}
+{% block title %}Home{% endblock %}
 {% block content %}
 {% load static %}
-<div class="container custom-container">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light w-100">
-        <div class="container-fluid">
-            <!-- Home button on the left -->
-            <a class="btn btn-outline-primary" href="/home/">
-                <i class="fas fa-home"></i> Home
-            </a>
 
-            <!-- Profile dropdown on the right -->
-            <div class="dropdown">
-                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fas fa-user"></i> Profile
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-light sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="/home/">
+            <i class="fas fa-blog"></i> BlogSpace
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <form class="d-flex ms-auto me-3" method="GET" action="/home/">
+                <div class="input-group">
+                    <input class="form-control" type="search" placeholder="Search posts..." name="search" value="{{ search_query }}" aria-label="Search">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+
+            <div class="navbar-nav">
+                <button onclick="toggleTheme()" class="theme-toggle" title="Toggle theme">
+                    <i id="theme-icon" class="fas fa-moon"></i>
                 </button>
-                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                    <a class="dropdown-item" href="/profile/">Profile</a>
-                    <a class="dropdown-item" href="/myposts/">My Posts</a>
-                    <form method="POST" action="/signout/">
-                        {% csrf_token %}
-                        <button type="submit" class="dropdown-item">Sign Out</button>
-                    </form>
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle me-2"></i>
+                        {{ user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="/profile/"><i class="fas fa-user me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="/myposts/"><i class="fas fa-file-alt me-2"></i>My Posts</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="POST" action="/signout/" class="dropdown-item p-0">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Sign Out</button>
+                            </form>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
-    </nav>
+    </div>
+</nav>
 
-    <br><br>
-    <div class="container custom-container" style="max-width: 1350px; ">
-        <div class="row mb-4">
-            <div class="col-md-8">
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newPostModal">
-                    <i class="fas fa-plus"></i> Create New Post
-                </button>
-            </div>
-            <div class="col-md-4">
-                <form method="GET" action="/home/" class="d-flex">
-                    <input class="form-control me-2" type="search" placeholder="Search posts..." name="search" value="{{ search_query }}" aria-label="Search">
-                    <button class="btn btn-outline-success" type="submit">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </form>
+<!-- Main Content -->
+<div class="custom-container">
+    <!-- Create Post Button -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newPostModal">
+            <i class="fas fa-plus-circle me-2"></i>Create New Post
+        </button>
+    </div>
+
+    <!-- Posts Grid -->
+    <div class="row g-4">
+        {% for post in posts %}
+        <div class="col-12 fade-in">
+            <div class="card post-card" style="cursor: pointer;" onclick="showPostModal('{{ post.id }}')">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center">
+                            {% if post.author.profile.avatar %}
+                            <img src="{{ post.author.profile.avatar.url }}" 
+                                 alt="Profile Avatar" 
+                                 class="avatar-circle post-avatar-image shadow-sm">
+                            {% elif post.author.profile.selected_avatar %}
+                            <div class="avatar-circle post-avatar-icon avatar-dynamic-bg shadow-sm"
+                                 style="--avatar-bg-color: {{ post.author.profile.selected_avatar_color }}">
+                                <i class="{{ post.author.profile.selected_avatar }}"></i>
+                            </div>
+                            {% else %}
+                            <div class="avatar-circle post-avatar bg-primary text-white shadow-sm">
+                                {{ post.author.username|make_list|first|upper }}
+                            </div>
+                            {% endif %}
+                            <div class="ms-3">
+                                <h6 class="mb-0 fw-semibold">{{ post.author.username }}</h6>
+                                <small class="text-muted">
+                                    By <a href="{% url 'user_profile' post.author.username %}" class="text-decoration-none" onclick="event.stopPropagation();">{{ post.author }}</a>
+                                    on {{ post.date_posted|date:"F d, Y" }}
+                                </small>
+                            </div>
+                        </div>
+                        {% if user == post.author %}
+                        <div class="d-flex" onclick="event.stopPropagation();">
+                            <button type="button" class="btn btn-outline-primary btn-sm me-2" 
+                                    data-bs-toggle="modal" data-bs-target="#editPostModal{{ post.id }}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <form method="POST" action="/delete_post/{{ post.id }}/" class="ms-2">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger btn-sm" 
+                                        onclick="return confirm('Are you sure you want to delete this post?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <h4 class="card-title mb-3">{{ post.title }}</h4>
+                    
+                    {% if post.image %}
+                    <div class="post-image-container text-center my-3">
+                        <img src="{{ post.image.url }}" 
+                             alt="Post image" 
+                             class="img-fluid rounded"
+                             style="max-height: 400px; width: auto; object-fit: contain;">
+                    </div>
+                    {% endif %}
+                    
+                    <p class="card-text post-content">{{ post.content|truncatewords:50 }}</p>
+
+                    <div class="d-flex align-items-center mt-3">
+                        <button class="btn btn-like {% if post.id in liked_posts %}liked{% endif %}" 
+                                data-post-id="{{ post.id }}"
+                                onclick="likePost(this, '{{ csrf_token }}')">
+                            <i class="fas fa-heart"></i>
+                            <span class="likes-count ms-1">{{ post.total_likes }}</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Modal definition moved outside the loop -->
-        <div class="modal fade" id="newPostModal" tabindex="-1" aria-labelledby="newPostModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
+        <!-- Post View Modal -->
+        <div class="modal fade" id="postModal{{ post.id }}" tabindex="-1" aria-labelledby="postModalLabel{{ post.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="newPostModalLabel">Create New Post</h5>
+                    <div class="modal-header border-0 pb-0">
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <form method="POST" action="/newpost/" enctype="multipart/form-data">
-                            {% csrf_token %}
-                            <div class="form-group mb-3">
-                                <label for="postTitle">Title</label>
-                                <input type="text" class="form-control" id="postTitle" name="title" required>
+                        <div class="container-fluid">
+                            <div class="row">
+                                {% if post.image %}
+                                <div class="col-md-8">
+                                    <div class="post-image-container text-center mb-3">
+                                        <img src="{{ post.image.url }}" 
+                                             alt="Post image" 
+                                             class="img-fluid rounded"
+                                             style="max-height: 70vh; width: auto; object-fit: contain;">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                {% else %}
+                                <div class="col-12">
+                                {% endif %}
+                                    <div class="d-flex align-items-center mb-4">
+                                        {% if post.author.profile.avatar %}
+                                        <img src="{{ post.author.profile.avatar.url }}" 
+                                             alt="Profile Avatar" 
+                                             class="avatar-circle post-avatar-image shadow-sm">
+                                        {% elif post.author.profile.selected_avatar %}
+                                        <div class="avatar-circle post-avatar-icon avatar-dynamic-bg shadow-sm"
+                                             style="--avatar-bg-color: {{ post.author.profile.selected_avatar_color }}">
+                                            <i class="{{ post.author.profile.selected_avatar }}"></i>
+                                        </div>
+                                        {% else %}
+                                        <div class="avatar-circle post-avatar bg-primary text-white shadow-sm">
+                                            {{ post.author.username|make_list|first|upper }}
+                                        </div>
+                                        {% endif %}
+                                        <div class="ms-3">
+                                            <h6 class="mb-0 fw-semibold">
+                                                <a href="{% url 'user_profile' post.author.username %}" class="text-decoration-none">{{ post.author.username }}</a>
+                                            </h6>
+                                            <small class="text-muted">{{ post.date_posted|date:"F d, Y" }}</small>
+                                        </div>
+                                    </div>
+                                    <h3 class="mb-4">{{ post.title }}</h3>
+                                    <div class="post-content">{{ post.content }}</div>
+                                </div>
                             </div>
-                            <div class="form-group mb-3">
-                                <label for="postImage">Image</label>
-                                <input type="file" class="form-control" id="postImage" name="image" accept="image/*">
-                            </div>
-                            <div class="form-group mb-3">
-                                <label for="postContent">Content</label>
-                                <textarea class="form-control" id="postContent" name="content" rows="4" required></textarea>
-                            </div>
-                            <div class="modal-footer px-0 pb-0">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="submit" class="btn btn-primary">Create Post</button>
-                            </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        {% for post in posts %}
-        <article class="media content-section">
-            <div class="media-body" style="border: 1px solid black; padding: 23px; margin-bottom: 10px;">
-                <div class="article-metadata">
-                    <h1 class="text-uppercase" style="text-align:left;float:left; color: #000000;">{{ post.author }}</h1>
-                    <h5 style="text-align:right;float:right;">{{ post.date_posted|date:"F d, Y" }}</h5>
-                    <hr style="clear:both;" />
-                    {% if user == post.author %}
-                    <form method="POST" action="/delete_post/{{ post.id }}/" style="float: right;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this post?')">
-                            <i class="fas fa-trash"></i> Delete Post
-                        </button>
-                    </form>
+        {% empty %}
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    {% if search_query %}
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h4>No results found for "{{ search_query }}"</h4>
+                        <p class="mb-0">Try a different search term or <a href="/home/" class="text-primary">view all posts</a>.</p>
+                    {% else %}
+                        <i class="fas fa-feather-alt fa-3x text-muted mb-3"></i>
+                        <h4>No posts yet</h4>
+                        <p class="mb-0">Be the first to create a post!</p>
                     {% endif %}
                 </div>
-                <h3>{{ post.title }}</h3>
-                {% if post.image %}
-                    <div class="post-image-container text-center mb-3">
-                        <img src="/media/{{ post.image }}" 
-                             alt="Post image" 
-                             class="img-fluid rounded shadow"
-                             style="max-width: 100%; 
-                                    max-height: 600px; 
-                                    object-fit: contain;">
-                    </div>
-                {% endif %}
-                <p class="article-content">{{ post.content }}</p>
-                <br><br>
             </div>
-        </article>
-        {% empty %}
-        <div class="alert alert-info">
-            {% if search_query %}
-                <h4><i class="fas fa-search"></i> No results found for "{{ search_query }}"</h4>
-                <p>Try a different search term or <a href="/home/" class="alert-link">view all posts</a>.</p>
-            {% else %}
-                <h4><i class="fas fa-info-circle"></i> No posts available</h4>
-                <p>Be the first to create a post!</p>
-            {% endif %}
         </div>
         {% endfor %}
     </div>
 </div>
+
+<!-- New Post Modal -->
+<div class="modal fade" id="newPostModal" tabindex="-1" aria-labelledby="newPostModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newPostModalLabel">Create New Post</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="/newpost/" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="postTitle" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="postTitle" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="postImage" class="form-label">Image (optional)</label>
+                        <input type="file" class="form-control" id="postImage" name="image" accept="image/*">
+                    </div>
+                    <div class="mb-3">
+                        <label for="postContent" class="form-label">Content</label>
+                        <textarea class="form-control" id="postContent" name="content" rows="5" required></textarea>
+                    </div>
+                    <div class="modal-footer px-0 pb-0">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Create Post
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Post Modals -->
+{% for post in posts %}
+{% if user == post.author %}
+<div class="modal fade" id="editPostModal{{ post.id }}" tabindex="-1" aria-labelledby="editPostModalLabel{{ post.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editPostModalLabel{{ post.id }}">Edit Post</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="/edit_post/{{ post.id }}/" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="postTitle{{ post.id }}" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="postTitle{{ post.id }}" name="title" value="{{ post.title }}" required>
+                    </div>
+                    {% if post.image %}
+                    <div class="mb-3">
+                        <label class="form-label">Current Image</label>
+                        <div class="d-flex align-items-center">
+                            <img src="{{ post.image.url }}" alt="Current post image" class="img-thumbnail me-3" style="max-height: 100px;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="deleteImage{{ post.id }}" name="delete_image" value="true">
+                                <label class="form-check-label" for="deleteImage{{ post.id }}">
+                                    Delete current image
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="mb-3">
+                        <label for="postImage{{ post.id }}" class="form-label">New Image (optional)</label>
+                        <input type="file" class="form-control" id="postImage{{ post.id }}" name="image" accept="image/*">
+                    </div>
+                    <div class="mb-3">
+                        <label for="postContent{{ post.id }}" class="form-label">Content</label>
+                        <textarea class="form-control" id="postContent{{ post.id }}" name="content" rows="5" required>{{ post.content }}</textarea>
+                    </div>
+                    <div class="modal-footer px-0 pb-0">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+<script>
+function showPostModal(postId) {
+    const modalId = `postModal${postId}`;
+    const modal = new bootstrap.Modal(document.getElementById(modalId));
+    modal.show();
+}
+
+function likePost(button, csrfToken) {
+    const postId = button.dataset.postId;
+    
+    fetch('/like/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken
+        },
+        body: `post_id=${postId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Update like button state
+        if (data.liked) {
+            button.classList.add('liked');
+        } else {
+            button.classList.remove('liked');
+        }
+        // Update likes count
+        button.querySelector('.likes-count').textContent = data.likes_count;
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>
 {% endblock %}
