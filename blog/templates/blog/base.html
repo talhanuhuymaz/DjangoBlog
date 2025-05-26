@@ -406,16 +406,15 @@
             color: var(--primary-color);
         }
 
-        /* Like and Comment button styles */
+        /* Post interaction buttons */
         .btn-like, .comment-count {
-            background: none;
-            border: none;
             display: flex;
             align-items: center;
-            padding: 0.5rem;
-            margin: 0;
             color: var(--text-muted);
-            transition: all 0.2s ease;
+            transition: color 0.2s ease;
+            padding: 0;
+            background: none;
+            border: none;
         }
 
         .btn-like:hover, .comment-count:hover {
@@ -427,12 +426,7 @@
         }
 
         .btn-like.liked:hover {
-            color: #dc3545;
-            opacity: 0.8;
-        }
-
-        .comment-count {
-            margin-left: 0.5rem;
+            color: #bb2d3b;
         }
 
         /* Mobile responsiveness for posts */
