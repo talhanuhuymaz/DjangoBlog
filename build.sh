@@ -20,23 +20,8 @@ python manage.py migrate --noinput
 echo "Collecting static files..."
 python manage.py collectstatic --noinput --clear
 
-# Create superuser directly
+# Create superuser using a Python script
 echo "Creating superuser..."
-python -c "
-from django.contrib.auth.models import User
-try:
-    if not User.objects.filter(username='Talhanuh').exists():
-        User.objects.create_superuser('Talhanuh', 'admin@example.com', 'admin12345')
-        print('Superuser created successfully')
-    else:
-        user = User.objects.get(username='Talhanuh')
-        user.is_staff = True
-        user.is_superuser = True
-        user.set_password('admin12345')
-        user.save()
-        print('Existing user updated with superuser privileges')
-except Exception as e:
-    print(f'Error creating superuser: {str(e)}')
-"
+echo "from django.contrib.auth.models import User; User.objects.filter(username='admin').delete(); User.objects.create_superuser('admin', 'admin@example.com', 'admin123')" | python manage.py shell
 
 echo "Build completed." 
