@@ -10,13 +10,18 @@
             <i class="fas fa-blog"></i> BlogSpace
         </a>
         
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+        <div class="d-flex align-items-center">
+            <button onclick="toggleTheme()" class="theme-toggle d-lg-none me-2" title="Toggle theme">
+                <i id="theme-icon-mobile" class="fas fa-moon"></i>
+            </button>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
 
         <div class="collapse navbar-collapse" id="navbarContent">
-            <div class="navbar-nav ms-auto">
-                <button onclick="toggleTheme()" class="theme-toggle" title="Toggle theme">
+            <div class="navbar-nav ms-auto align-items-center">
+                <button onclick="toggleTheme()" class="theme-toggle d-none d-lg-flex" title="Toggle theme">
                     <i id="theme-icon" class="fas fa-moon"></i>
                 </button>
                 <div class="nav-item dropdown">

@@ -6,17 +6,22 @@
 <!-- Navigation -->
 <nav class="navbar navbar-expand-lg navbar-light sticky-top">
     <div class="container">
-        <a class="navbar-brand" href="/home/">
+        <a class="navbar-brand" href="{% url 'home-page' %}">
             <i class="fas fa-blog"></i> BlogSpace
         </a>
         
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+        <div class="d-flex align-items-center">
+            <button onclick="toggleTheme()" class="theme-toggle d-lg-none me-2" title="Toggle theme">
+                <i id="theme-icon-mobile" class="fas fa-moon"></i>
+            </button>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
 
         <div class="collapse navbar-collapse" id="navbarContent">
-            <div class="navbar-nav ms-auto">
-                <button onclick="toggleTheme()" class="theme-toggle" title="Toggle theme">
+            <div class="navbar-nav ms-auto align-items-center">
+                <button onclick="toggleTheme()" class="theme-toggle d-none d-lg-flex" title="Toggle theme">
                     <i id="theme-icon" class="fas fa-moon"></i>
                 </button>
                 <div class="nav-item dropdown">
@@ -25,11 +30,12 @@
                         {{ user.username }}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item active" href="/profile/"><i class="fas fa-user me-2"></i>Profile</a></li>
-                        <li><a class="dropdown-item" href="/myposts/"><i class="fas fa-file-alt me-2"></i>My Posts</a></li>
+                        <li><a class="dropdown-item active" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="{% url 'settings' %}"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                        <li><a class="dropdown-item" href="{% url 'my-posts' %}"><i class="fas fa-file-alt me-2"></i>My Posts</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
-                            <form method="POST" action="/signout/" class="dropdown-item p-0">
+                            <form method="POST" action="{% url 'signout' %}" class="dropdown-item p-0">
                                 {% csrf_token %}
                                 <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Sign Out</button>
                             </form>
