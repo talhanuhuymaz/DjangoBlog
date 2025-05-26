@@ -1,0 +1,221 @@
+{% extends 'blog/base.html' %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+{% load static %}
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-light sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'home-page' %}">
+            <i class="fas fa-blog"></i> BlogSpace
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <div class="navbar-nav ms-auto">
+                <button onclick="toggleTheme()" class="theme-toggle" title="Toggle theme">
+                    <i id="theme-icon" class="fas fa-moon"></i>
+                </button>
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle me-2"></i>
+                        {{ user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item active" href="{% url 'settings' %}"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                        <li><a class="dropdown-item" href="{% url 'my-posts' %}"><i class="fas fa-file-alt me-2"></i>My Posts</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="POST" action="{% url 'signout' %}" class="dropdown-item p-0">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Sign Out</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="custom-container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4 p-sm-5">
+                    <h2 class="card-title text-center mb-4">
+                        <i class="fas fa-cog text-primary me-2"></i>Settings
+                    </h2>
+
+                    <div class="alert alert-info border-0 mb-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-shield-alt me-3 fs-4"></i>
+                            <div>
+                                <strong>Security Notice:</strong>
+                                <p class="mb-0">Your current password is required to update profile information.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            {% if user.profile.avatar %}
+                            <div class="d-flex justify-content-center">
+                                <img src="{{ user.profile.avatar.url }}" 
+                                     alt="Profile Picture" 
+                                     class="avatar-circle profile-avatar-image shadow mb-3"
+                                     style="width: 150px; height: 150px; object-fit: cover;">
+                            </div>
+                            {% else %}
+                            <div class="d-flex justify-content-center">
+                                <div class="avatar-circle profile-avatar bg-primary text-white shadow mb-3"
+                                     style="width: 150px; height: 150px; font-size: 3rem; display: flex; align-items: center; justify-content: center;">
+                                    {{ user.username|make_list|first|upper }}
+                                </div>
+                            </div>
+                            {% endif %}
+                            <h4 class="mb-0">{{ user.username }}</h4>
+                            <p class="text-muted">{{ user.email }}</p>
+                        </div>
+
+                        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                            {% csrf_token %}
+                            
+                            <!-- Profile Picture -->
+                            <div class="mb-4">
+                                <label class="form-label d-block">Profile Picture</label>
+                                {% if user.profile.avatar %}
+                                <div class="d-flex align-items-center mb-3">
+                                    <img src="{{ user.profile.avatar.url }}" 
+                                         alt="Current profile picture" 
+                                         class="img-thumbnail me-3" 
+                                         style="width: 100px; height: 100px; object-fit: cover;">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="deleteAvatar" name="delete_avatar">
+                                        <label class="form-check-label" for="deleteAvatar">
+                                            Remove current picture
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                <input type="file" class="form-control" id="avatar" name="avatar" accept="image/*">
+                                <div class="form-text">Maximum file size: 2MB. Supported formats: JPG, PNG, GIF.</div>
+                            </div>
+
+                            <!-- Username -->
+                            <div class="mb-4">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+                                <div class="invalid-feedback">Please choose a username.</div>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="mb-4">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                                <div class="invalid-feedback">Please provide a valid email.</div>
+                            </div>
+
+                            <!-- Current Password -->
+                            <div class="mb-4">
+                                <label for="password" class="form-label">Current Password <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                                <div class="invalid-feedback">Please enter your current password to save changes.</div>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Save Changes
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                    <i class="fas fa-key me-2"></i>Change Password
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            {% if messages %}
+            <div class="mt-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changePasswordModalLabel">
+                    <i class="fas fa-key text-primary me-2"></i>Change Password
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'change_password' %}">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="currentPassword" class="form-label">Current Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0">
+                                <i class="fas fa-lock text-muted"></i>
+                            </span>
+                            <input type="password" 
+                                   class="form-control bg-light border-0 ps-2" 
+                                   id="currentPassword" 
+                                   name="current_password" 
+                                   required>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="newPassword" class="form-label">New Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0">
+                                <i class="fas fa-key text-muted"></i>
+                            </span>
+                            <input type="password" 
+                                   class="form-control bg-light border-0 ps-2" 
+                                   id="newPassword" 
+                                   name="new_password" 
+                                   required>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0">
+                                <i class="fas fa-key text-muted"></i>
+                            </span>
+                            <input type="password" 
+                                   class="form-control bg-light border-0 ps-2" 
+                                   id="confirmPassword" 
+                                   name="confirm_password" 
+                                   required>
+                        </div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Change Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %} 

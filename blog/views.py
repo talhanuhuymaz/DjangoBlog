@@ -231,7 +231,7 @@ def test_image(request, image_name):
     return HttpResponse('Image not found', status=404)
 
 @login_required
-def profile(request):
+def settings(request):
     if request.method == 'POST':
         # Get form data
         user = request.user
@@ -244,17 +244,17 @@ def profile(request):
         # Verify password
         if not password or not user.check_password(password):
             messages.error(request, 'Current password is incorrect')
-            return redirect('profile')
+            return redirect('settings')
         
         # Check if username exists (excluding current user)
         if User.objects.filter(username=username).exclude(id=user.id).exists():
             messages.error(request, 'Username already exists')
-            return redirect('profile')
+            return redirect('settings')
         
         # Check if email exists (excluding current user)
         if User.objects.filter(email=email).exclude(id=user.id).exists():
             messages.error(request, 'Email already exists')
-            return redirect('profile')
+            return redirect('settings')
         
         try:
             # Update user information
@@ -270,12 +270,12 @@ def profile(request):
                 # Validate file size (max 2MB)
                 if avatar.size > 2 * 1024 * 1024:
                     messages.error(request, 'Avatar size should not exceed 2MB')
-                    return redirect('profile')
+                    return redirect('settings')
                 
                 # Validate file type
                 if not avatar.content_type.startswith('image/'):
                     messages.error(request, 'File must be an image')
-                    return redirect('profile')
+                    return redirect('settings')
                 
                 # Delete old avatar if it exists
                 if user.profile.avatar:
@@ -288,12 +288,31 @@ def profile(request):
         except Exception as e:
             messages.error(request, f'Error updating profile: {str(e)}')
         
-        return redirect('profile')
+        return redirect('settings')
     
     context = {
         'user': request.user
     }
-    return render(request, 'blog/profile.html', context)
+    return render(request, 'blog/settings.html', context)
+
+@login_required
+def profile(request):
+    # Get the user's posts
+    posts = Post.objects.filter(author=request.user).order_by('-date_posted')
+    
+    # Get followers and following lists
+    followers = User.objects.filter(profile__following=request.user).exclude(username='')
+    following = request.user.profile.following.exclude(username='')
+    
+    context = {
+        'profile_user': request.user,
+        'posts': posts,
+        'followers': followers,
+        'following': following,
+        'followers_count': request.user.profile.followers_count,
+        'following_count': request.user.profile.following_count,
+    }
+    return render(request, 'blog/user_profile.html', context)
 
 @login_required
 def change_password(request):

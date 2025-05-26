@@ -6,7 +6,7 @@
 <!-- Navigation -->
 <nav class="navbar navbar-expand-lg navbar-light sticky-top">
     <div class="container">
-        <a class="navbar-brand" href="/home/">
+        <a class="navbar-brand" href="{% url 'home-page' %}">
             <i class="fas fa-blog"></i> BlogSpace
         </a>
         
@@ -20,7 +20,7 @@
         </div>
 
         <div class="collapse navbar-collapse" id="navbarContent">
-            <form class="d-flex ms-auto me-3 mt-2 mt-lg-0" method="GET" action="/home/" id="searchForm">
+            <form class="d-flex ms-auto me-3 mt-2 mt-lg-0" method="GET" action="{% url 'home-page' %}" id="searchForm">
                 <div class="input-group">
                     <input class="form-control" type="search" placeholder="Search posts..." name="search" value="{{ search_query }}" aria-label="Search">
                     <input type="hidden" name="tab" id="currentTab" value="following">
@@ -40,11 +40,12 @@
                         {{ user.username }}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="/profile/"><i class="fas fa-user me-2"></i>Profile</a></li>
-                        <li><a class="dropdown-item" href="/myposts/"><i class="fas fa-file-alt me-2"></i>My Posts</a></li>
+                        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="{% url 'settings' %}"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                        <li><a class="dropdown-item" href="{% url 'my-posts' %}"><i class="fas fa-file-alt me-2"></i>My Posts</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
-                            <form method="POST" action="/signout/" class="dropdown-item p-0">
+                            <form method="POST" action="{% url 'signout' %}" class="dropdown-item p-0">
                                 {% csrf_token %}
                                 <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Sign Out</button>
                             </form>
@@ -139,7 +140,7 @@
                     {% if search_query %}
                         <i class="fas fa-search fa-3x text-muted mb-3"></i>
                         <h4>No results found for "{{ search_query }}"</h4>
-                        <p class="mb-0">Try a different search term or <a href="/home/" class="text-primary">view all posts</a>.</p>
+                        <p class="mb-0">Try a different search term or <a href="{% url 'home-page' %}" class="text-primary">view all posts</a>.</p>
                     {% else %}
                         <i class="fas fa-feather-alt fa-3x text-muted mb-3"></i>
                         <h4>No posts yet</h4>
@@ -168,7 +169,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form method="POST" action="/edit_post/{{ post.id }}/" enctype="multipart/form-data">
+                <form method="POST" action="{% url 'edit_post' post.id %}/" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="postTitle{{ post.id }}" class="form-label">Title</label>

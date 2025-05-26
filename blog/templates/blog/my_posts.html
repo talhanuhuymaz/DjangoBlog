@@ -6,7 +6,7 @@
 <!-- Navigation -->
 <nav class="navbar navbar-expand-lg navbar-light sticky-top">
     <div class="container">
-        <a class="navbar-brand" href="/home/">
+        <a class="navbar-brand" href="{% url 'home-page' %}">
             <i class="fas fa-blog"></i> BlogSpace
         </a>
         
@@ -25,11 +25,12 @@
                         {{ user.username }}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="/profile/"><i class="fas fa-user me-2"></i>Profile</a></li>
-                        <li><a class="dropdown-item active" href="/myposts/"><i class="fas fa-file-alt me-2"></i>My Posts</a></li>
+                        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="{% url 'settings' %}"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                        <li><a class="dropdown-item active" href="{% url 'my-posts' %}"><i class="fas fa-file-alt me-2"></i>My Posts</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
-                            <form method="POST" action="/signout/" class="dropdown-item p-0">
+                            <form method="POST" action="{% url 'signout' %}" class="dropdown-item p-0">
                                 {% csrf_token %}
                                 <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Sign Out</button>
                             </form>
@@ -45,7 +46,7 @@
 <div class="custom-container">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="mb-0"><i class="fas fa-file-alt me-2"></i>My Posts</h4>
-        <a href="/home/" class="btn btn-primary">
+        <a href="{% url 'home-page' %}" class="btn btn-primary">
             <i class="fas fa-plus-circle me-2"></i>Create New Post
         </a>
     </div>
@@ -82,7 +83,7 @@
                                     data-bs-toggle="modal" data-bs-target="#editPostModal{{ post.id }}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <form method="POST" action="/delete_post/{{ post.id }}/" class="ms-2">
+                            <form method="POST" action="{% url 'delete_post' post.id %}/" class="ms-2">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-outline-danger btn-sm" 
                                         onclick="return confirm('Are you sure you want to delete this post?')">
@@ -114,7 +115,7 @@
                     <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
                     <h4>No Posts Yet</h4>
                     <p class="mb-3">You haven't created any posts yet.</p>
-                    <a href="/home/" class="btn btn-primary">
+                    <a href="{% url 'home-page' %}" class="btn btn-primary">
                         <i class="fas fa-plus-circle me-2"></i>Create Your First Post
                     </a>
                 </div>
@@ -134,7 +135,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form method="POST" action="/edit_post/{{ post.id }}/" enctype="multipart/form-data">
+                <form method="POST" action="{% url 'edit_post' post.id %}/" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="postTitle{{ post.id }}" class="form-label">Title</label>
