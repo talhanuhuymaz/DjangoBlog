@@ -20,16 +20,8 @@ from django.conf.urls.static import static
 from django.views.static import serve
 from django.urls import re_path
 
-# Custom admin site settings
-admin.site.site_header = settings.ADMIN_SITE_HEADER
-admin.site.site_title = settings.ADMIN_SITE_TITLE
-admin.site.index_title = settings.ADMIN_INDEX_TITLE
-
 urlpatterns = [
-    # Admin honeypot to catch hackers
-    path('admin/', include('admin_honeypot.urls')),
-    # Real admin URL with environment variable
-    path(settings.ADMIN_URL, admin.site.urls),
+    path('admin/', admin.site.urls),
     path('', include('blog.urls')),
     # Add explicit media serving
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),

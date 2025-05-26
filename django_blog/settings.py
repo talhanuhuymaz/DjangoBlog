@@ -94,12 +94,6 @@ else:
         }
     }
 
-# Admin site configuration
-ADMIN_URL = os.environ.get('DJANGO_ADMIN_URL', 'admin/')  # Custom admin URL
-ADMIN_SITE_HEADER = "BlogSpace Admin"
-ADMIN_SITE_TITLE = "BlogSpace Admin Portal"
-ADMIN_INDEX_TITLE = "Welcome to BlogSpace Admin Portal"
-
 # Logging configuration
 LOGGING = {
     'version': 1,
@@ -110,11 +104,7 @@ LOGGING = {
         },
     },
     'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
-        },
-        'blog': {  # Add logging for your app
+        'django.db.backends': {
             'handlers': ['console'],
             'level': 'INFO',
         },
@@ -184,16 +174,3 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
-    X_FRAME_OPTIONS = 'DENY'
-    SECURE_HSTS_SECONDS = 31536000  # 1 year
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-    
-    # Admin security settings
-    ADMIN_HONEYPOT_EMAIL_ADMINS = True
-    INSTALLED_APPS += ['admin_honeypot']  # Add admin honeypot for security
-    
-    # Session settings
-    SESSION_COOKIE_AGE = 3600  # 1 hour
-    SESSION_SAVE_EVERY_REQUEST = True
-    SESSION_EXPIRE_AT_BROWSER_CLOSE = True
