@@ -528,3 +528,31 @@ def toggle_follow(request, username):
             }, status=500)
         messages.error(request, f'Error following user: {str(e)}')
         return redirect('home-page')
+
+@login_required
+def delete_account(request):
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        user = authenticate(username=request.user.username, password=password)
+        
+        if user is not None:
+            # Delete the user's profile first (if it exists)
+            if hasattr(user, 'profile'):
+                user.profile.delete()
+            
+            # Delete all user's posts
+            user.post_set.all().delete()
+            
+            # Delete all user's comments
+            user.comment_set.all().delete()
+            
+            # Delete the user account
+            user.delete()
+            
+            messages.success(request, 'Your account has been permanently deleted.')
+            return redirect('login')
+        else:
+            messages.error(request, 'Incorrect password. Please try again.')
+            return redirect('settings')
+    
+    return redirect('settings')

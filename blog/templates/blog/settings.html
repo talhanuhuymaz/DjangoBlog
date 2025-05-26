@@ -135,6 +135,10 @@
                                 <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
                                     <i class="fas fa-key me-2"></i>Change Password
                                 </button>
+                                <hr class="my-4">
+                                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                                    <i class="fas fa-user-times me-2"></i>Delete Account
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -210,6 +214,44 @@
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save me-2"></i>Change Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger" id="deleteAccountModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Account
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <h6 class="alert-heading"><i class="fas fa-exclamation-circle me-2"></i>Warning!</h6>
+                    <p class="mb-0">This action cannot be undone. All your data, including posts, comments, and profile information will be permanently deleted.</p>
+                </div>
+                <form method="POST" action="{% url 'delete_account' %}" id="deleteAccountForm">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="deleteConfirmPassword" class="form-label">Enter your password to confirm</label>
+                        <input type="password" class="form-control" id="deleteConfirmPassword" name="password" required>
+                    </div>
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="confirmDelete" required>
+                        <label class="form-check-label" for="confirmDelete">
+                            I understand that this action is permanent and cannot be undone
+                        </label>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-user-times me-2"></i>Delete My Account
                         </button>
                     </div>
                 </form>

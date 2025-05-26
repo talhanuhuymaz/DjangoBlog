@@ -6,7 +6,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form method="POST" action="/newpost/" enctype="multipart/form-data">
+                <form method="POST" action="/newpost/" enctype="multipart/form-data" id="newPostForm" onsubmit="return handleNewPostSubmit(event)">
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="postTitle" class="form-label">Title</label>
@@ -22,12 +22,57 @@
                     </div>
                     <div class="modal-footer px-0 pb-0">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary" id="createPostBtn">
                             <i class="fas fa-paper-plane me-2"></i>Create Post
+                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                         </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+<script>
+function handleNewPostSubmit(event) {
+    const form = event.target;
+    const submitBtn = document.getElementById('createPostBtn');
+    const spinner = submitBtn.querySelector('.spinner-border');
+    
+    // Check if form is already being submitted
+    if (form.hasAttribute('data-submitting')) {
+        event.preventDefault();
+        return false;
+    }
+    
+    // Disable multiple submissions
+    form.setAttribute('data-submitting', 'true');
+    submitBtn.disabled = true;
+    
+    // Show loading state
+    spinner.classList.remove('d-none');
+    submitBtn.querySelector('i').classList.add('d-none');
+    submitBtn.textContent = ' Posting...';
+    submitBtn.prepend(spinner);
+    
+    return true;
+}
+
+// Reset form when modal is hidden
+document.getElementById('newPostModal').addEventListener('hidden.bs.modal', function () {
+    const form = document.getElementById('newPostForm');
+    const submitBtn = document.getElementById('createPostBtn');
+    const spinner = submitBtn.querySelector('.spinner-border');
+    
+    // Reset form
+    form.reset();
+    
+    // Reset submit button
+    form.removeAttribute('data-submitting');
+    submitBtn.disabled = false;
+    spinner.classList.add('d-none');
+    
+    // Restore button text
+    submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Create Post';
+});
+</script> 
