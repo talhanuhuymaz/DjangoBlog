@@ -39,23 +39,27 @@
     </div>
 
     <!-- Posts -->
-    <div class="row">
+    <div class="row g-4">
         {% if active_tab == 'following' %}
             {% if following_posts %}
                 {% for post in following_posts %}
-                    {% include 'blog/post_card.html' with post=post %}
+                    <div class="col-12">
+                        {% include 'blog/post_card.html' with post=post %}
+                    </div>
                 {% endfor %}
-                            {% else %}
+            {% else %}
                 <div class="col-12 text-center">
                     <p class="text-muted">Follow other users to see their posts here!</p>
                 </div>
-                                {% endif %}
-                                        {% else %}
+            {% endif %}
+        {% else %}
             {% if explore_posts %}
                 {% for post in explore_posts %}
-                    {% include 'blog/post_card.html' with post=post %}
-                                            {% endfor %}
-                    {% else %}
+                    <div class="col-12">
+                        {% include 'blog/post_card.html' with post=post %}
+                    </div>
+                {% endfor %}
+            {% else %}
                 <div class="col-12 text-center">
                     <p class="text-muted">No posts found.</p>
                 </div>

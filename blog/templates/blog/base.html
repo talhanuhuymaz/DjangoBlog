@@ -304,31 +304,99 @@
 
         .post-card {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-bottom: 1rem;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: var(--card-background);
         }
         
         .post-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         
-        .modal-content {
-            border: none;
-            border-radius: 1rem;
+        .post-card .card-body {
+            padding: 1.5rem;
         }
-        
-        .modal-dialog-centered.modal-xl {
-            max-width: 90%;
-        }
-        
-        @media (min-width: 1200px) {
-            .modal-dialog-centered.modal-xl {
-                max-width: 1140px;
-            }
-        }
-        
+
         .post-content {
-            white-space: pre-line;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: inherit;
             line-height: 1.6;
+            color: var(--text-color);
+            margin-bottom: 1rem;
+        }
+
+        .post-content p {
+            margin-bottom: 1rem;
+        }
+
+        /* Post image styling */
+        .post-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        /* Post header styling */
+        .post-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .post-author {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .post-meta {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        /* Post actions styling */
+        .post-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 1rem;
+        }
+
+        .post-action-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .post-action-btn:hover {
+            color: var(--primary-color);
+        }
+
+        /* Mobile responsiveness for posts */
+        @media (max-width: 768px) {
+            .post-card .card-body {
+                padding: 1rem;
+            }
+
+            .post-image {
+                max-height: 300px;
+            }
+
+            .post-actions {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
         }
 
         /* Mobile Responsive Improvements */
