@@ -327,6 +327,7 @@
 <script>
 function toggleFollow(button, csrfToken) {
     const username = button.dataset.username;
+    const currentProfileUsername = '{{ profile_user.username }}';
     
     fetch(`/toggle_follow/${username}/`, {
         method: 'POST',
@@ -354,10 +355,15 @@ function toggleFollow(button, csrfToken) {
                 text.textContent = 'Follow';
             }
             
-            // Update followers/following counts
-            document.querySelectorAll('.followers-count').forEach(el => {
-                el.textContent = data.followers_count;
-            });
+            // Only update counts if we're on the profile page of the user being followed/unfollowed
+            if (username === currentProfileUsername) {
+                // Update followers count
+                document.querySelectorAll('.followers-count').forEach(el => {
+                    el.textContent = data.followers_count;
+                });
+            }
+            
+            // Always update the current user's following count
             document.querySelectorAll('.following-count').forEach(el => {
                 el.textContent = data.following_count;
             });

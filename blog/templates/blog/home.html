@@ -12,6 +12,7 @@
         <div class="col-md-6 mx-auto">
             <form method="GET" action="{% url 'home-page' %}" class="d-flex">
                 <input type="text" name="search" class="form-control me-2" placeholder="Search posts..." value="{{ search_query }}">
+                <input type="hidden" name="tab" value="{{ active_tab }}">
                 <button type="submit" class="btn btn-primary">Search</button>
             </form>
         </div>
