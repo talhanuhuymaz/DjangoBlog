@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from cloudinary_storage.storage import MediaCloudinaryStorage
+from cloudinary.models import CloudinaryField
 
 # Create your models here.
 
@@ -41,7 +42,7 @@ class Comment(models.Model):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    avatar = models.ImageField(upload_to='profile_images/', storage=MediaCloudinaryStorage(), null=True, blank=True)
+    avatar = CloudinaryField('avatar', null=True, blank=True)
     selected_avatar = models.CharField(max_length=50, null=True, blank=True)
     selected_avatar_color = models.CharField(max_length=7, null=True, blank=True)
     following = models.ManyToManyField(User, related_name='followers', blank=True)
@@ -73,3 +74,21 @@ def create_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_profile(sender, instance, **kwargs):
     instance.profile.save()
+
+class Notification(models.Model):
+    LIKE = 'like'
+    FOLLOW = 'follow'
+    NOTIFICATION_TYPES = [
+        (LIKE, 'Like'),
+        (FOLLOW, 'Follow'),
+    ]
+
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_notifications')
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    post = models.ForeignKey('Post', on_delete=models.CASCADE, null=True, blank=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']

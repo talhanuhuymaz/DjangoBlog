@@ -23,4 +23,6 @@ urlpatterns = [
     path('delete_comment/<int:comment_id>/', views.delete_comment, name='delete_comment'),
     path('toggle_follow/<str:username>/', views.toggle_follow, name='toggle_follow'),
     path('delete-account/', views.delete_account, name='delete_account'),
+    path('notifications/', views.get_notifications, name='get_notifications'),
+    path('notifications/mark-read/', views.mark_notifications_read, name='mark_notifications_read'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -490,6 +490,82 @@
                 icon.className = theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
             }
         }
+
+        // Notifications
+        function loadNotifications() {
+            fetch('{% url "get_notifications" %}')
+                .then(response => response.json())
+                .then(data => {
+                    const notificationsList = document.querySelector('.notifications-list');
+                    const badge = document.querySelector('.notifications-badge');
+                    
+                    // Update badge
+                    if (data.unread_count > 0) {
+                        badge.textContent = data.unread_count;
+                        badge.classList.remove('d-none');
+                    } else {
+                        badge.classList.add('d-none');
+                    }
+                    
+                    // Update notifications list
+                    notificationsList.innerHTML = '';
+                    if (data.notifications.length === 0) {
+                        notificationsList.innerHTML = '<div class="dropdown-item text-muted">No notifications</div>';
+                        return;
+                    }
+                    
+                    data.notifications.forEach(notification => {
+                        const item = document.createElement('a');
+                        item.className = `dropdown-item ${notification.is_read ? 'text-muted' : 'fw-bold'}`;
+                        
+                        if (notification.type === 'like') {
+                            item.href = `/?post=${notification.post_id}`;
+                            item.innerHTML = `
+                                <i class="fas fa-heart text-danger me-2"></i>
+                                <strong>${notification.sender}</strong> liked your post "${notification.post_title}"
+                                <br>
+                                <small class="text-muted">${notification.created_at}</small>
+                            `;
+                        } else if (notification.type === 'follow') {
+                            item.href = `/profile/${notification.sender}/`;
+                            item.innerHTML = `
+                                <i class="fas fa-user-plus text-primary me-2"></i>
+                                <strong>${notification.sender}</strong> started following you
+                                <br>
+                                <small class="text-muted">${notification.created_at}</small>
+                            `;
+                        }
+                        
+                        notificationsList.appendChild(item);
+                    });
+                })
+                .catch(error => console.error('Error loading notifications:', error));
+        }
+
+        function markNotificationsRead() {
+            fetch('{% url "mark_notifications_read" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.querySelector('.notifications-badge').classList.add('d-none');
+                    document.querySelectorAll('.notifications-list .dropdown-item').forEach(item => {
+                        item.classList.add('text-muted');
+                        item.classList.remove('fw-bold');
+                    });
+                }
+            })
+            .catch(error => console.error('Error marking notifications as read:', error));
+        }
+
+        // Load notifications every 30 seconds
+        loadNotifications();
+        setInterval(loadNotifications, 30000);
     </script>
 </body>
 </html>

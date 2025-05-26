@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from .models import Post, Profile, Comment
+from .models import Post, Profile, Comment, Notification
 from django.conf import settings
 import os
 from django.core.exceptions import ValidationError
@@ -393,6 +393,14 @@ def like_post(request):
     else:
         post.likes.add(request.user)
         liked = True
+        # Create notification for the post author
+        if request.user != post.author:
+            Notification.objects.create(
+                recipient=post.author,
+                sender=request.user,
+                notification_type=Notification.LIKE,
+                post=post
+            )
     
     return JsonResponse({
         'liked': liked,
@@ -505,18 +513,23 @@ def toggle_follow(request, username):
         else:
             request.user.profile.following.add(user_to_follow)
             message = f"You are now following {user_to_follow.username}"
+            # Create notification for the followed user
+            Notification.objects.create(
+                recipient=user_to_follow,
+                sender=request.user,
+                notification_type=Notification.FOLLOW
+            )
         
         # If the request is AJAX, return JSON response
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
                 'status': 'success',
                 'message': message,
-                'is_following': not is_following,  # Toggle the state
+                'is_following': not is_following,
                 'followers_count': user_to_follow.profile.followers_count,
                 'following_count': user_to_follow.profile.following_count
             })
         
-        # Otherwise show message and redirect
         messages.success(request, message)
         return redirect(request.META.get('HTTP_REFERER', 'home-page'))
         
@@ -556,3 +569,33 @@ def delete_account(request):
             return redirect('settings')
     
     return redirect('settings')
+
+@login_required
+def get_notifications(request):
+    notifications = request.user.notifications.all()[:10]  # Get last 10 notifications
+    unread_count = request.user.notifications.filter(is_read=False).count()
+    
+    notifications_data = []
+    for notification in notifications:
+        data = {
+            'id': notification.id,
+            'sender': notification.sender.username,
+            'type': notification.notification_type,
+            'created_at': notification.created_at.strftime("%b %d, %Y, %I:%M %p"),
+            'is_read': notification.is_read,
+        }
+        if notification.post:
+            data['post_id'] = notification.post.id
+            data['post_title'] = notification.post.title
+        notifications_data.append(data)
+    
+    return JsonResponse({
+        'notifications': notifications_data,
+        'unread_count': unread_count
+    })
+
+@login_required
+@require_POST
+def mark_notifications_read(request):
+    request.user.notifications.filter(is_read=False).update(is_read=True)
+    return JsonResponse({'status': 'success'})
