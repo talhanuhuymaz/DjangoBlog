@@ -62,18 +62,11 @@
                         </div>
                     {% endif %}
 
-                    <!-- Profile Info -->
-                    <h3 class="mb-2">{{ profile_user.username }}</h3>
-                    <p class="text-muted mb-3">
-                        <i class="fas fa-calendar-alt me-2"></i>
-                        Joined {{ profile_user.date_joined|date:"F Y" }}
-                    </p>
-
                     {% if user != profile_user %}
-                    <!-- Follow Button -->
+                    <!-- Follow Button - Now directly under profile picture -->
                     <div class="mb-3">
                         <button type="button" 
-                                class="btn {% if profile_user in user.profile.following.all %}btn-outline-primary{% else %}btn-primary{% endif %} follow-button"
+                                class="btn {% if profile_user in user.profile.following.all %}btn-outline-primary{% else %}btn-primary{% endif %} follow-button w-100"
                                 data-username="{{ profile_user.username }}"
                                 onclick="toggleFollow(this, '{{ csrf_token }}')">
                             <i class="fas {% if profile_user in user.profile.following.all %}fa-user-minus{% else %}fa-user-plus{% endif %} me-1"></i>
@@ -81,6 +74,13 @@
                         </button>
                     </div>
                     {% endif %}
+
+                    <!-- Profile Info -->
+                    <h3 class="mb-2">{{ profile_user.username }}</h3>
+                    <p class="text-muted mb-3">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Joined {{ profile_user.date_joined|date:"F Y" }}
+                    </p>
                     
                     <!-- Stats -->
                     <div class="row g-0 border-top pt-3">
