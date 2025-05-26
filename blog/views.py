@@ -339,12 +339,8 @@ def profile_view(request, username):
         posts = Post.objects.filter(author=user).order_by('-date_posted')
         
         # Get followers and following lists, filtering out invalid users
-        followers = user.followers.exclude(username='').all()
-        following = user.profile.following.exclude(username='').all()
-        
-        # Get followers and following counts
-        followers_count = followers.count()
-        following_count = following.count()
+        followers = User.objects.filter(profile__following=user).exclude(username='')
+        following = user.profile.following.exclude(username='')
         
         # Get liked posts for the current user
         liked_posts = []
@@ -356,8 +352,8 @@ def profile_view(request, username):
             'posts': posts,
             'followers': followers,
             'following': following,
-            'followers_count': followers_count,
-            'following_count': following_count,
+            'followers_count': user.profile.followers_count,
+            'following_count': user.profile.following_count,
             'liked_posts': liked_posts,
         }
         return render(request, 'blog/user_profile.html', context)
@@ -470,7 +466,7 @@ def toggle_follow(request, username):
                     'message': "You cannot follow yourself!"
                 }, status=400)
             messages.error(request, "You cannot follow yourself!")
-            return redirect('home')
+            return redirect('home-page')
         
         # Ensure both users have profiles
         try:
@@ -497,13 +493,13 @@ def toggle_follow(request, username):
                 'status': 'success',
                 'message': message,
                 'is_following': not is_following,  # Toggle the state
-                'followers_count': user_to_follow.followers.count(),
-                'following_count': user_to_follow.profile.following.count()
+                'followers_count': user_to_follow.profile.followers_count,
+                'following_count': user_to_follow.profile.following_count
             })
         
         # Otherwise show message and redirect
         messages.success(request, message)
-        return redirect(request.META.get('HTTP_REFERER', 'home'))
+        return redirect(request.META.get('HTTP_REFERER', 'home-page'))
         
     except Exception as e:
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':

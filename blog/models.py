@@ -42,10 +42,20 @@ class Comment(models.Model):
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to='profile_images/', storage=MediaCloudinaryStorage(), null=True, blank=True)
+    selected_avatar = models.CharField(max_length=50, null=True, blank=True)
+    selected_avatar_color = models.CharField(max_length=7, null=True, blank=True)
     following = models.ManyToManyField(User, related_name='followers', blank=True)
 
     def __str__(self):
         return f'{self.user.username} Profile'
+
+    @property
+    def followers_count(self):
+        return self.user.followers.count()
+
+    @property
+    def following_count(self):
+        return self.following.count()
 
     def delete(self, *args, **kwargs):
         # Delete the image file when the profile is deleted
