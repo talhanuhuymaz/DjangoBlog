@@ -38,11 +38,10 @@ class Comment(models.Model):
     class Meta:
         ordering = ['-date_posted']
 
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to='profile_images/', null=True, blank=True)
-    selected_avatar = models.CharField(max_length=50, null=True, blank=True)
-    selected_avatar_color = models.CharField(max_length=7, default='#4F46E5')
+    following = models.ManyToManyField(User, related_name='followers', blank=True)
 
     def __str__(self):
         return f'{self.user.username} Profile'
@@ -55,11 +54,11 @@ class UserProfile(models.Model):
 
 # Create profile when user is created
 @receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
+def create_profile(sender, instance, created, **kwargs):
     if created:
-        UserProfile.objects.create(user=instance)
+        Profile.objects.create(user=instance)
 
 # Save profile when user is saved
 @receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
+def save_profile(sender, instance, **kwargs):
     instance.profile.save()

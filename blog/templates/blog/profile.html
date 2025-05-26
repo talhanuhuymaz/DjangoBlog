@@ -61,118 +61,73 @@
                         </div>
                     </div>
 
-                    <form method="POST" enctype="multipart/form-data">
-                        {% csrf_token %}
+                    <div class="card-body">
                         <div class="text-center mb-4">
-                            <div class="avatar-container mb-3">
-                                {% if user.profile.avatar %}
-                                    <img src="{{ user.profile.avatar.url }}" 
-                                         alt="Profile Avatar" 
-                                         class="avatar-circle profile-avatar-image shadow-sm d-block mx-auto">
-                                {% elif user.profile.selected_avatar %}
-                                    <div class="avatar-circle profile-avatar-icon avatar-dynamic-bg shadow-sm mx-auto"
-                                         style="--avatar-bg-color: {{ user.profile.selected_avatar_color }}">
-                                        <i class="{{ user.profile.selected_avatar }}"></i>
-                                    </div>
-                                {% else %}
-                                    <div class="avatar-circle profile-avatar bg-primary text-white shadow-sm mx-auto">
-                                        {{ user.username|make_list|first|upper }}
-                                    </div>
-                                {% endif %}
+                            {% if user.profile.avatar %}
+                            <img src="{{ user.profile.avatar.url }}" 
+                                 alt="Profile Picture" 
+                                 class="avatar-circle profile-avatar-image shadow mb-3">
+                            {% else %}
+                            <div class="avatar-circle profile-avatar bg-primary text-white shadow mb-3 mx-auto">
+                                {{ user.username|make_list|first|upper }}
                             </div>
+                            {% endif %}
+                            <h4 class="mb-0">{{ user.username }}</h4>
+                            <p class="text-muted">{{ user.email }}</p>
+                        </div>
+
+                        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                            {% csrf_token %}
                             
-                            <!-- Avatar Selection -->
+                            <!-- Profile Picture -->
                             <div class="mb-4">
-                                <label class="form-label d-block">Choose Avatar Style</label>
-                                <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
-                                    {% for avatar in default_avatars %}
-                                    <div class="avatar-option">
-                                        <input type="radio" 
-                                               class="btn-check" 
-                                               name="selected_avatar" 
-                                               id="avatar{{ forloop.counter }}" 
-                                               value="{{ avatar.icon }}"
-                                               {% if user.profile.selected_avatar == avatar.icon %}checked{% endif %}>
-                                        <label class="btn btn-outline-primary rounded-circle p-3" 
-                                               for="avatar{{ forloop.counter }}"
-                                               style="width: 60px; height: 60px;">
-                                            <i class="{{ avatar.icon }}"></i>
+                                <label class="form-label d-block">Profile Picture</label>
+                                {% if user.profile.avatar %}
+                                <div class="d-flex align-items-center mb-3">
+                                    <img src="{{ user.profile.avatar.url }}" 
+                                         alt="Current profile picture" 
+                                         class="img-thumbnail me-3" 
+                                         style="width: 100px; height: 100px; object-fit: cover;">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="deleteAvatar" name="delete_avatar">
+                                        <label class="form-check-label" for="deleteAvatar">
+                                            Remove current picture
                                         </label>
-                                        <small class="d-block mt-1 text-muted">{{ avatar.name }}</small>
                                     </div>
-                                    {% endfor %}
                                 </div>
-                                
-                                <div class="text-center">
-                                    <p class="text-muted mb-2">- OR -</p>
-                                    <label for="avatarUpload" class="form-label">Upload Custom Picture</label>
-                                    <input type="file" 
-                                           class="form-control bg-light border-0" 
-                                           id="avatarUpload" 
-                                           name="avatar" 
-                                           accept="image/*">
-                                    <div class="form-text">Maximum file size: 2MB</div>
-                                </div>
+                                {% endif %}
+                                <input type="file" class="form-control" id="avatar" name="avatar" accept="image/*">
+                                <div class="form-text">Maximum file size: 2MB. Supported formats: JPG, PNG, GIF.</div>
                             </div>
-                        </div>
 
-                        <div class="mb-4">
-                            <label for="username" class="form-label">Username</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-0">
-                                    <i class="fas fa-user text-muted"></i>
-                                </span>
-                                <input type="text" 
-                                       class="form-control bg-light border-0 ps-2" 
-                                       id="username" 
-                                       name="username" 
-                                       value="{{ user.username }}" 
-                                       required>
+                            <!-- Username -->
+                            <div class="mb-4">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+                                <div class="invalid-feedback">Please choose a username.</div>
                             </div>
-                        </div>
 
-                        <div class="mb-4">
-                            <label for="email" class="form-label">Email</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-0">
-                                    <i class="fas fa-envelope text-muted"></i>
-                                </span>
-                                <input type="email" 
-                                       class="form-control bg-light border-0 ps-2" 
-                                       id="email" 
-                                       name="email" 
-                                       value="{{ user.email }}" 
-                                       required>
+                            <!-- Email -->
+                            <div class="mb-4">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                                <div class="invalid-feedback">Please provide a valid email.</div>
                             </div>
-                        </div>
 
-                        <div class="mb-4">
-                            <label for="password" class="form-label">Current Password</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-0">
-                                    <i class="fas fa-lock text-muted"></i>
-                                </span>
-                                <input type="password" 
-                                       class="form-control bg-light border-0 ps-2" 
-                                       id="password" 
-                                       name="password" 
-                                       placeholder="Enter current password to save changes"
-                                       required>
+                            <!-- Current Password -->
+                            <div class="mb-4">
+                                <label for="password" class="form-label">Current Password <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                                <div class="invalid-feedback">Please enter your current password to save changes.</div>
                             </div>
-                        </div>
 
-                        <div class="d-flex justify-content-between align-items-center">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Save Changes
-                            </button>
-                            <button type="button" 
-                                    class="btn btn-outline-danger" 
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#changePasswordModal">
-                                <i class="fas fa-key me-2"></i>Change Password
-                            </button>
-                        </div>
-                    </form>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
 

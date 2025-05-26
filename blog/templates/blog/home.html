@@ -10,22 +10,28 @@
             <i class="fas fa-blog"></i> BlogSpace
         </a>
         
+        <div class="d-flex align-items-center">
+            <button onclick="toggleTheme()" class="theme-toggle d-lg-none me-2" title="Toggle theme">
+                <i id="theme-icon-mobile" class="fas fa-moon"></i>
+            </button>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
             <span class="navbar-toggler-icon"></span>
         </button>
+        </div>
 
         <div class="collapse navbar-collapse" id="navbarContent">
-            <form class="d-flex ms-auto me-3" method="GET" action="/home/">
+            <form class="d-flex ms-auto me-3 mt-2 mt-lg-0" method="GET" action="/home/" id="searchForm">
                 <div class="input-group">
                     <input class="form-control" type="search" placeholder="Search posts..." name="search" value="{{ search_query }}" aria-label="Search">
+                    <input type="hidden" name="tab" id="currentTab" value="following">
                     <button class="btn btn-primary" type="submit">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
             </form>
 
-            <div class="navbar-nav">
-                <button onclick="toggleTheme()" class="theme-toggle" title="Toggle theme">
+            <div class="navbar-nav align-items-center">
+                <button onclick="toggleTheme()" class="theme-toggle d-none d-lg-flex" title="Toggle theme">
                     <i id="theme-icon" class="fas fa-moon"></i>
                 </button>
                 <div class="nav-item dropdown">
@@ -54,248 +60,77 @@
 <div class="custom-container">
     <!-- Create Post Button -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newPostModal">
+        <button type="button" class="btn btn-primary w-100 w-md-auto" data-bs-toggle="modal" data-bs-target="#newPostModal">
             <i class="fas fa-plus-circle me-2"></i>Create New Post
         </button>
     </div>
 
-    <!-- Posts Grid -->
-    <div class="row g-4">
-        {% for post in posts %}
-        <div class="col-12 fade-in">
-            <div class="card post-card" style="cursor: pointer;" onclick="showPostModal('{{ post.id }}')">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="d-flex align-items-center">
-                            {% if post.author.profile.avatar %}
-                            <img src="{{ post.author.profile.avatar.url }}" 
-                                 alt="Profile Avatar" 
-                                 class="avatar-circle post-avatar-image shadow-sm">
-                            {% elif post.author.profile.selected_avatar %}
-                            <div class="avatar-circle post-avatar-icon avatar-dynamic-bg shadow-sm"
-                                 style="--avatar-bg-color: {{ post.author.profile.selected_avatar_color }}">
-                                <i class="{{ post.author.profile.selected_avatar }}"></i>
-                            </div>
-                            {% else %}
-                            <div class="avatar-circle post-avatar bg-primary text-white shadow-sm">
-                                {{ post.author.username|make_list|first|upper }}
-                            </div>
-                            {% endif %}
-                            <div class="ms-3">
-                                <h6 class="mb-0 fw-semibold">{{ post.author.username }}</h6>
-                                <small class="text-muted">
-                                    By <a href="{% url 'user_profile' post.author.username %}" class="text-decoration-none" onclick="event.stopPropagation();">{{ post.author }}</a>
-                                    on {{ post.date_posted|date:"F d, Y" }}
-                                </small>
-                            </div>
-                        </div>
-                        {% if user == post.author %}
-                        <div class="d-flex" onclick="event.stopPropagation();">
-                            <button type="button" class="btn btn-outline-primary btn-sm me-2" 
-                                    data-bs-toggle="modal" data-bs-target="#editPostModal{{ post.id }}">
-                                <i class="fas fa-edit"></i>
+    <!-- Feed Tabs -->
+    <ul class="nav nav-tabs nav-fill mb-4" id="feedTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {% if active_tab == 'following' %}active{% endif %}" 
+                    id="following-tab" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#following" 
+                    type="button" 
+                    role="tab" 
+                    aria-controls="following" 
+                    aria-selected="{% if active_tab == 'following' %}true{% else %}false{% endif %}">
+                <i class="fas fa-users me-2"></i>Following
                             </button>
-                            <form method="POST" action="/delete_post/{{ post.id }}/" class="ms-2">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-outline-danger btn-sm" 
-                                        onclick="return confirm('Are you sure you want to delete this post?')">
-                                    <i class="fas fa-trash"></i>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {% if active_tab == 'explore' %}active{% endif %}" 
+                    id="explore-tab" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#explore" 
+                    type="button" 
+                    role="tab" 
+                    aria-controls="explore" 
+                    aria-selected="{% if active_tab == 'explore' %}true{% else %}false{% endif %}">
+                <i class="fas fa-compass me-2"></i>Explore
                                 </button>
-                            </form>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="feedTabsContent">
+        <!-- Following Tab -->
+        <div class="tab-pane fade {% if active_tab == 'following' %}show active{% endif %}" 
+             id="following" 
+             role="tabpanel" 
+             aria-labelledby="following-tab">
+            <div class="row g-4">
+                {% for post in following_posts %}
+                <div class="col-12 fade-in">
+                    {% include "blog/post_card.html" with post=post %}
+                </div>
+                {% empty %}
+                                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body text-center py-5">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h4>No posts from people you follow</h4>
+                            <p class="mb-3">Start following people to see their posts here!</p>
+                            <a href="#explore" class="btn btn-primary" data-bs-toggle="tab" data-bs-target="#explore">
+                                <i class="fas fa-compass me-2"></i>Explore Posts
+                            </a>
                         </div>
-                        {% endif %}
-                    </div>
-
-                    <h4 class="card-title mb-3">{{ post.title }}</h4>
-                    
-                    {% if post.image %}
-                    <div class="post-image-container text-center my-3">
-                        <img src="{{ post.image.url }}" 
-                             alt="Post image" 
-                             class="img-fluid rounded"
-                             style="max-height: 400px; width: auto; object-fit: contain;">
-                    </div>
-                    {% endif %}
-                    
-                    <p class="card-text post-content">{{ post.content|truncatewords:50 }}</p>
-
-                    <div class="d-flex align-items-center mt-3">
-                        <button class="btn btn-like {% if post.id in liked_posts %}liked{% endif %}" 
-                                data-post-id="{{ post.id }}"
-                                onclick="likePost(this, '{{ csrf_token }}')">
-                            <i class="fas fa-heart"></i>
-                            <span class="likes-count ms-1">{{ post.total_likes }}</span>
-                        </button>
                     </div>
                 </div>
+                {% endfor %}
             </div>
         </div>
 
-        <!-- Post View Modal -->
-        <div class="modal fade" id="postModal{{ post.id }}" tabindex="-1" aria-labelledby="postModalLabel{{ post.id }}" aria-hidden="true">
-            <div class="modal-dialog modal-xl modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header border-0 pb-0">
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="container-fluid">
-                            <div class="row">
-                                {% if post.image %}
-                                <div class="col-md-8">
-                                    <div class="post-image-container text-center mb-3">
-                                        <img src="{{ post.image.url }}" 
-                                             alt="Post image" 
-                                             class="img-fluid rounded"
-                                             style="max-height: 70vh; width: auto; object-fit: contain;">
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                {% else %}
-                                <div class="col-12">
-                                {% endif %}
-                                    <div class="d-flex align-items-center mb-4">
-                                        {% if post.author.profile.avatar %}
-                                        <img src="{{ post.author.profile.avatar.url }}" 
-                                             alt="Profile Avatar" 
-                                             class="avatar-circle post-avatar-image shadow-sm">
-                                        {% elif post.author.profile.selected_avatar %}
-                                        <div class="avatar-circle post-avatar-icon avatar-dynamic-bg shadow-sm"
-                                             style="--avatar-bg-color: {{ post.author.profile.selected_avatar_color }}">
-                                            <i class="{{ post.author.profile.selected_avatar }}"></i>
-                                        </div>
-                                        {% else %}
-                                        <div class="avatar-circle post-avatar bg-primary text-white shadow-sm">
-                                            {{ post.author.username|make_list|first|upper }}
-                                        </div>
-                                        {% endif %}
-                                        <div class="ms-3">
-                                            <h6 class="mb-0 fw-semibold">
-                                                <a href="{% url 'user_profile' post.author.username %}" class="text-decoration-none">{{ post.author.username }}</a>
-                                            </h6>
-                                            <small class="text-muted">{{ post.date_posted|date:"F d, Y" }}</small>
-                                        </div>
-                                    </div>
-                                    <h3 class="mb-4">{{ post.title }}</h3>
-                                    <div class="post-content mb-4">{{ post.content }}</div>
-                                    
-                                    <!-- Comments Section -->
-                                    <div class="comments-section mt-5">
-                                        <div class="d-flex justify-content-between align-items-center mb-4">
-                                            <h5 class="mb-0">
-                                                <i class="fas fa-comments me-2"></i>
-                                                Comments ({{ post.comments.count }})
-                                            </h5>
-                                        </div>
-                                        
-                                        <!-- Comment Form -->
-                                        <div class="comment-form-container mb-4">
-                                            <form method="POST" action="{% url 'add_comment' post.id %}" class="comment-form" data-post-id="{{ post.id }}">
-                                                {% csrf_token %}
-                                                <div class="d-flex gap-2">
-                                                    {% if user.profile.avatar %}
-                                                    <img src="{{ user.profile.avatar.url }}" 
-                                                         alt="Your Avatar" 
-                                                         class="avatar-circle comment-avatar-image shadow-sm"
-                                                         style="width: 40px; height: 40px;">
-                                                    {% elif user.profile.selected_avatar %}
-                                                    <div class="avatar-circle comment-avatar-icon avatar-dynamic-bg shadow-sm"
-                                                         style="--avatar-bg-color: {{ user.profile.selected_avatar_color }}; width: 40px; height: 40px;">
-                                                        <i class="{{ user.profile.selected_avatar }}"></i>
-                                                    </div>
-                                                    {% else %}
-                                                    <div class="avatar-circle comment-avatar bg-primary text-white shadow-sm"
-                                                         style="width: 40px; height: 40px;">
-                                                        {{ user.username|make_list|first|upper }}
-                                                    </div>
-                                                    {% endif %}
-                                                    <div class="flex-grow-1">
-                                                        <div class="form-floating">
-                                                            <textarea class="form-control" 
-                                                                      name="content" 
-                                                                      placeholder="Add a comment..." 
-                                                                      id="commentContent{{ post.id }}"
-                                                                      style="height: 100px"
-                                                                      required></textarea>
-                                                            <label for="commentContent{{ post.id }}">Add a comment as {{ user.username }}...</label>
-                                                        </div>
-                                                        <div class="mt-2 text-end">
-                                                            <button type="submit" class="btn btn-primary">
-                                                                <i class="fas fa-paper-plane me-2"></i>Post Comment
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </form>
-                                        </div>
-                                        
-                                        <!-- Comments List -->
-                                        <div class="comments-list">
-                                            {% for comment in post.comments.all %}
-                                            <div class="comment mb-4">
-                                                <div class="card shadow-sm border-0">
-                                                    <div class="card-body">
-                                                        <div class="d-flex justify-content-between align-items-start">
-                                                            <div class="d-flex gap-3">
-                                                                {% if comment.author.profile.avatar %}
-                                                                <img src="{{ comment.author.profile.avatar.url }}" 
-                                                                     alt="Profile Avatar" 
-                                                                     class="avatar-circle comment-avatar-image shadow-sm"
-                                                                     style="width: 40px; height: 40px;">
-                                                                {% elif comment.author.profile.selected_avatar %}
-                                                                <div class="avatar-circle comment-avatar-icon avatar-dynamic-bg shadow-sm"
-                                                                     style="--avatar-bg-color: {{ comment.author.profile.selected_avatar_color }}; width: 40px; height: 40px;">
-                                                                    <i class="{{ comment.author.profile.selected_avatar }}"></i>
-                                                                </div>
-                                                                {% else %}
-                                                                <div class="avatar-circle comment-avatar bg-primary text-white shadow-sm"
-                                                                     style="width: 40px; height: 40px;">
-                                                                    {{ comment.author.username|make_list|first|upper }}
-                                                                </div>
-                                                                {% endif %}
-                                                                <div>
-                                                                    <div class="d-flex align-items-center gap-2">
-                                                                        <h6 class="mb-0 fw-semibold">{{ comment.author.username }}</h6>
-                                                                        <small class="text-muted">•</small>
-                                                                        <small class="text-muted">{{ comment.date_posted|date:"F d, Y" }}</small>
-                                                                    </div>
-                                                                    <div class="comment-content mt-2">
-                                                                        {{ comment.content }}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            {% if user == comment.author %}
-                                                            <div class="ms-2">
-                                                                <form method="POST" action="{% url 'delete_comment' comment.id %}" class="delete-comment-form">
-                                                                    {% csrf_token %}
-                                                                    <button type="submit" 
-                                                                            class="btn btn-link text-danger p-0"
-                                                                            title="Delete comment">
-                                                                        <i class="fas fa-trash"></i>
-                                                                    </button>
-                                                                </form>
-                                                            </div>
-                                                            {% endif %}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            {% empty %}
-                                            <div class="text-center py-4">
-                                                <div class="text-muted mb-3">
-                                                    <i class="fas fa-comments fa-2x"></i>
-                                                </div>
-                                                <p class="text-muted mb-0">No comments yet. Be the first to comment!</p>
-                                            </div>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <!-- Explore Tab -->
+        <div class="tab-pane fade {% if active_tab == 'explore' %}show active{% endif %}" 
+             id="explore" 
+             role="tabpanel" 
+             aria-labelledby="explore-tab">
+            <div class="row g-4">
+                {% for post in explore_posts %}
+                <div class="col-12 fade-in">
+                    {% include "blog/post_card.html" with post=post %}
         </div>
         {% empty %}
         <div class="col-12">
@@ -314,46 +149,16 @@
             </div>
         </div>
         {% endfor %}
-    </div>
-</div>
-
-<!-- New Post Modal -->
-<div class="modal fade" id="newPostModal" tabindex="-1" aria-labelledby="newPostModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="newPostModalLabel">Create New Post</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form method="POST" action="/newpost/" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="postTitle" class="form-label">Title</label>
-                        <input type="text" class="form-control" id="postTitle" name="title" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="postImage" class="form-label">Image (optional)</label>
-                        <input type="file" class="form-control" id="postImage" name="image" accept="image/*">
-                    </div>
-                    <div class="mb-3">
-                        <label for="postContent" class="form-label">Content</label>
-                        <textarea class="form-control" id="postContent" name="content" rows="5" required></textarea>
-                    </div>
-                    <div class="modal-footer px-0 pb-0">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-paper-plane me-2"></i>Create Post
-                        </button>
-                    </div>
-                </form>
             </div>
         </div>
     </div>
 </div>
 
+<!-- New Post Modal -->
+{% include "blog/modals/new_post_modal.html" %}
+
 <!-- Edit Post Modals -->
-{% for post in posts %}
+{% for post in explore_posts|add:following_posts %}
 {% if user == post.author %}
 <div class="modal fade" id="editPostModal{{ post.id }}" tabindex="-1" aria-labelledby="editPostModalLabel{{ post.id }}" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -437,164 +242,31 @@ function likePost(button, csrfToken) {
     .catch(error => console.error('Error:', error));
 }
 
+// Add active class to current tab based on URL hash and handle tab changes
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle comment form submissions
-    document.querySelectorAll('.comment-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const postId = this.dataset.postId;
-            const formData = new FormData(this);
-            const commentsList = this.closest('.comments-section').querySelector('.comments-list');
-            const commentCount = this.closest('.comments-section').querySelector('h5');
-            
-            fetch(this.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    // Clear the form
-                    this.reset();
-                    
-                    // Create new comment HTML
-                    const commentHtml = createCommentHtml(data.comment);
-                    
-                    // If there are no comments, remove the "no comments" message
-                    if (commentsList.querySelector('.text-center')) {
-                        commentsList.innerHTML = '';
-                    }
-                    
-                    // Add the new comment to the top of the list
-                    commentsList.insertAdjacentHTML('afterbegin', commentHtml);
-                    
-                    // Update comment count
-                    const currentCount = parseInt(commentCount.textContent.match(/\d+/)[0]);
-                    commentCount.innerHTML = `<i class="fas fa-comments me-2"></i>Comments (${currentCount + 1})`;
-                    
-                    // Add fade-in animation
-                    const newComment = commentsList.querySelector('.comment');
-                    newComment.style.opacity = '0';
-                    newComment.style.transform = 'translateY(20px)';
-                    setTimeout(() => {
-                        newComment.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                        newComment.style.opacity = '1';
-                        newComment.style.transform = 'translateY(0)';
-                    }, 10);
-                }
-            })
-            .catch(error => console.error('Error:', error));
+    // Get the tab from URL parameters first
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    const hash = tabParam ? `#${tabParam}` : (window.location.hash || '#following');
+    
+    // Set initial active tab
+    const tab = document.querySelector(`[data-bs-target="${hash}"]`);
+    if (tab) {
+        tab.click();
+    }
+
+    // Update hidden input when tabs change
+    const tabs = document.querySelectorAll('[data-bs-toggle="tab"]');
+    tabs.forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function (event) {
+            const activeTab = event.target.getAttribute('data-bs-target').replace('#', '');
+            document.getElementById('currentTab').value = activeTab;
         });
     });
 
-    // Handle comment deletion
-    document.querySelectorAll('.delete-comment-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            if (!confirm('Are you sure you want to delete this comment?')) {
-                return;
-            }
-            
-            const commentElement = this.closest('.comment');
-            const commentsList = this.closest('.comments-list');
-            const commentCount = this.closest('.comments-section').querySelector('h5');
-            
-            fetch(this.action, {
-                method: 'POST',
-                body: new FormData(this),
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    // Add fade-out animation
-                    commentElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                    commentElement.style.opacity = '0';
-                    commentElement.style.transform = 'translateY(-20px)';
-                    
-                    // Remove the comment after animation
-                    setTimeout(() => {
-                        commentElement.remove();
-                        
-                        // Update comment count
-                        const currentCount = parseInt(commentCount.textContent.match(/\d+/)[0]);
-                        const newCount = currentCount - 1;
-                        commentCount.innerHTML = `<i class="fas fa-comments me-2"></i>Comments (${newCount})`;
-                        
-                        // Show "no comments" message if this was the last comment
-                        if (newCount === 0) {
-                            commentsList.innerHTML = `
-                                <div class="text-center py-4">
-                                    <div class="text-muted mb-3">
-                                        <i class="fas fa-comments fa-2x"></i>
-                                    </div>
-                                    <p class="text-muted mb-0">No comments yet. Be the first to comment!</p>
-                                </div>
-                            `;
-                        }
-                    }, 300);
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        });
-    });
+    // Set initial value of currentTab
+    const activeTabId = document.querySelector('.nav-link.active').getAttribute('data-bs-target').replace('#', '');
+    document.getElementById('currentTab').value = activeTabId;
 });
-
-function createCommentHtml(comment) {
-    const avatarHtml = comment.author_avatar_url ? 
-        `<img src="${comment.author_avatar_url}" 
-              alt="Profile Avatar" 
-              class="avatar-circle comment-avatar-image shadow-sm"
-              style="width: 40px; height: 40px;">` :
-        comment.author_selected_avatar ?
-        `<div class="avatar-circle comment-avatar-icon avatar-dynamic-bg shadow-sm"
-              style="--avatar-bg-color: ${comment.author_selected_avatar_color}; width: 40px; height: 40px;">
-            <i class="${comment.author_selected_avatar}"></i>
-         </div>` :
-        `<div class="avatar-circle comment-avatar bg-primary text-white shadow-sm"
-              style="width: 40px; height: 40px;">
-            ${comment.author[0].toUpperCase()}
-         </div>`;
-
-    return `
-        <div class="comment mb-4">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div class="d-flex gap-3">
-                            ${avatarHtml}
-                            <div>
-                                <div class="d-flex align-items-center gap-2">
-                                    <h6 class="mb-0 fw-semibold">${comment.author}</h6>
-                                    <small class="text-muted">•</small>
-                                    <small class="text-muted">${comment.date_posted}</small>
-                                </div>
-                                <div class="comment-content mt-2">
-                                    ${comment.content}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="ms-2">
-                            <form method="POST" action="{% url 'delete_comment' 999999 %}".replace('999999', comment.id) class="delete-comment-form">
-                                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                                <button type="submit" 
-                                        class="btn btn-link text-danger p-0"
-                                        title="Delete comment">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-}
 </script>
 {% endblock %}

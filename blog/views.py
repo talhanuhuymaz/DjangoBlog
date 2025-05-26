@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from .models import Post, UserProfile, Comment
+from .models import Post, Profile, Comment
 from django.conf import settings
 import os
 from django.core.exceptions import ValidationError
@@ -28,9 +28,9 @@ def login_view(request):
             # Ensure the user has a profile
             try:
                 profile = user.profile
-            except UserProfile.DoesNotExist:
+            except Profile.DoesNotExist:
                 # Create profile if it doesn't exist
-                UserProfile.objects.create(user=user)
+                Profile.objects.create(user=user)
                 
             login(request, user)
             return redirect('home-page')
@@ -75,15 +75,22 @@ class PostListView(ListView):
 @login_required
 def home(request):
     search_query = request.GET.get('search', '')
+    active_tab = request.GET.get('tab', 'following')
     
+    # Get posts for both tabs
     if search_query:
-        posts = Post.objects.filter(
+        all_posts = Post.objects.filter(
             Q(title__icontains=search_query) | 
             Q(content__icontains=search_query) |
             Q(author__username__icontains=search_query)
         ).order_by('-date_posted')
     else:
-        posts = Post.objects.all().order_by('-date_posted')
+        all_posts = Post.objects.all().order_by('-date_posted')
+    
+    # Split posts into following and explore
+    following_users = request.user.profile.following.all()
+    following_posts = all_posts.filter(author__in=following_users)
+    explore_posts = all_posts.exclude(author__in=following_users)
     
     # Get liked posts for the current user
     liked_posts = []
@@ -91,9 +98,11 @@ def home(request):
         liked_posts = Post.objects.filter(likes=request.user).values_list('id', flat=True)
     
     context = {
-        'posts': posts,
+        'following_posts': following_posts,
+        'explore_posts': explore_posts,
         'search_query': search_query,
-        'liked_posts': liked_posts
+        'liked_posts': liked_posts,
+        'active_tab': active_tab
     }
     return render(request, 'blog/home.html', context)
 
@@ -223,29 +232,13 @@ def test_image(request, image_name):
 
 @login_required
 def profile(request):
-    # Ensure user has a profile
-    try:
-        profile = request.user.profile
-    except UserProfile.DoesNotExist:
-        profile = UserProfile.objects.create(user=request.user)
-
-    # Define default avatars
-    default_avatars = [
-        {'name': 'Default 1', 'icon': 'fas fa-user-circle', 'color': '#4F46E5'},
-        {'name': 'Default 2', 'icon': 'fas fa-user-ninja', 'color': '#7C3AED'},
-        {'name': 'Default 3', 'icon': 'fas fa-user-astronaut', 'color': '#EC4899'},
-        {'name': 'Default 4', 'icon': 'fas fa-user-tie', 'color': '#10B981'},
-        {'name': 'Default 5', 'icon': 'fas fa-user-graduate', 'color': '#F59E0B'},
-        {'name': 'Default 6', 'icon': 'fas fa-user-secret', 'color': '#6366F1'}
-    ]
-
     if request.method == 'POST':
         # Get form data
         user = request.user
         username = request.POST.get('username')
         email = request.POST.get('email')
         avatar = request.FILES.get('avatar')
-        selected_avatar = request.POST.get('selected_avatar')
+        delete_avatar = request.POST.get('delete_avatar')
         password = request.POST.get('password')
         
         # Verify password
@@ -270,7 +263,10 @@ def profile(request):
             user.save()
             
             # Handle avatar update
-            if avatar:
+            if delete_avatar and user.profile.avatar:
+                user.profile.avatar.delete()
+                user.profile.avatar = None
+            elif avatar:
                 # Validate file size (max 2MB)
                 if avatar.size > 2 * 1024 * 1024:
                     messages.error(request, 'Avatar size should not exceed 2MB')
@@ -281,27 +277,21 @@ def profile(request):
                     messages.error(request, 'File must be an image')
                     return redirect('profile')
                 
-                # Delete old avatar if it's not the default
-                if user.profile.avatar and not user.profile.avatar.name.startswith('default_avatar_'):
+                # Delete old avatar if it exists
+                if user.profile.avatar:
                     user.profile.avatar.delete()
                 user.profile.avatar = avatar
-                user.profile.save()
-            elif selected_avatar:
-                # Update selected default avatar
-                user.profile.selected_avatar = selected_avatar
-                user.profile.selected_avatar_color = next((a['color'] for a in default_avatars if a['icon'] == selected_avatar), '#4F46E5')
-                user.profile.avatar = None
-                user.profile.save()
             
+            user.profile.save()
             messages.success(request, 'Profile updated successfully!')
+            
         except Exception as e:
             messages.error(request, f'Error updating profile: {str(e)}')
         
         return redirect('profile')
     
     context = {
-        'user': request.user,
-        'default_avatars': default_avatars
+        'user': request.user
     }
     return render(request, 'blog/profile.html', context)
 
@@ -435,3 +425,36 @@ def delete_comment(request, comment_id):
         else:
             messages.error(request, 'Comment not found')
             return redirect('home-page')
+
+@login_required
+def toggle_follow(request, username):
+    user_to_follow = get_object_or_404(User, username=username)
+    
+    if request.user == user_to_follow:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'status': 'error',
+                'message': "You cannot follow yourself!"
+            }, status=400)
+        messages.error(request, "You cannot follow yourself!")
+        return redirect('home')
+    
+    is_following = user_to_follow in request.user.profile.following.all()
+    if is_following:
+        request.user.profile.following.remove(user_to_follow)
+        message = f"You have unfollowed {user_to_follow.username}"
+    else:
+        request.user.profile.following.add(user_to_follow)
+        message = f"You are now following {user_to_follow.username}"
+    
+    # If the request is AJAX, return JSON response
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'status': 'success',
+            'message': message,
+            'is_following': not is_following  # Toggle the state
+        })
+    
+    # Otherwise show message and redirect
+    messages.success(request, message)
+    return redirect(request.META.get('HTTP_REFERER', 'home'))
