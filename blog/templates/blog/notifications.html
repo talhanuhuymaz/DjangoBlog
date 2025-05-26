@@ -1,0 +1,117 @@
+{% extends "blog/base.html" %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'home-page' %}">Blog</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'home-page' %}">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'notifications-page' %}">
+                        <i class="fas fa-bell"></i> Notifications
+                        {% if unread_count > 0 %}
+                            <span class="badge bg-danger rounded-pill">{{ unread_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'profile' %}">
+                        <i class="fas fa-user"></i> Profile
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <button class="theme-toggle" onclick="toggleTheme()">
+                        <i id="theme-icon" class="fas fa-moon"></i>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Notifications</h5>
+                    {% if notifications %}
+                        <button class="btn btn-sm btn-primary" onclick="markAllAsRead()">
+                            Mark all as read
+                        </button>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if notifications %}
+                        <div class="notifications-list">
+                            {% for notification in notifications %}
+                                <div class="notification-item p-3 {% if not notification.is_read %}bg-light{% endif %} border-bottom">
+                                    {% if notification.notification_type == 'like' %}
+                                        <a href="{% url 'home-page' %}?post={{ notification.post.id }}" class="text-decoration-none">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-heart text-danger me-3"></i>
+                                                <div>
+                                                    <p class="mb-1 {% if not notification.is_read %}fw-bold{% endif %}">
+                                                        {{ notification.sender.username }} liked your post "{{ notification.post.title }}"
+                                                    </p>
+                                                    <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    {% elif notification.notification_type == 'follow' %}
+                                        <a href="{% url 'user_profile' notification.sender.username %}" class="text-decoration-none">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-user-plus text-primary me-3"></i>
+                                                <div>
+                                                    <p class="mb-1 {% if not notification.is_read %}fw-bold{% endif %}">
+                                                        {{ notification.sender.username }} started following you
+                                                    </p>
+                                                    <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-bell text-muted mb-3" style="font-size: 2rem;"></i>
+                            <p class="text-muted">No notifications yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function markAllAsRead() {
+    fetch('{% url "mark_notifications_read" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            location.reload();
+        }
+    })
+    .catch(error => console.error('Error marking notifications as read:', error));
+}
+</script>
+{% endblock %} 

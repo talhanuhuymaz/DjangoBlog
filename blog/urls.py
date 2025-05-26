@@ -25,4 +25,5 @@ urlpatterns = [
     path('delete-account/', views.delete_account, name='delete_account'),
     path('notifications/', views.get_notifications, name='get_notifications'),
     path('notifications/mark-read/', views.mark_notifications_read, name='mark_notifications_read'),
+    path('notifications/page/', views.notifications_page, name='notifications-page'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
