@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from cloudinary_storage.storage import MediaCloudinaryStorage
 
 # Create your models here.
 
@@ -11,7 +12,7 @@ class Post(models.Model):
     content = models.TextField()
     date_posted = models.DateTimeField(default=timezone.now)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='post_images/', null=True, blank=True)
+    image = models.ImageField(upload_to='post_images/', storage=MediaCloudinaryStorage(), null=True, blank=True)
     likes = models.ManyToManyField(User, related_name='post_likes', blank=True)
 
     def __str__(self):
@@ -40,7 +41,7 @@ class Comment(models.Model):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    avatar = models.ImageField(upload_to='profile_images/', null=True, blank=True)
+    avatar = models.ImageField(upload_to='profile_images/', storage=MediaCloudinaryStorage(), null=True, blank=True)
     following = models.ManyToManyField(User, related_name='followers', blank=True)
 
     def __str__(self):
