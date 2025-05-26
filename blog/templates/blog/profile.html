@@ -1,5 +1,12 @@
 {% extends 'blog/base.html' %}
 {% block title %}Profile{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Add any profile-specific styles here */
+</style>
+{% endblock %}
+
 {% block content %}
 {% load static %}
 
@@ -25,7 +32,7 @@
                     <i id="theme-icon" class="fas fa-moon"></i>
                 </button>
                 <div class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-user-circle me-2"></i>
                         {{ user.username }}
                     </a>
@@ -221,8 +228,19 @@
     </div>
 </div>
 
+{% endblock %}
+
 {% block extra_js %}
 <script>
+    // Initialize Bootstrap components
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize dropdowns
+        var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
+        var dropdownList = dropdownElementList.map(function(element) {
+            return new bootstrap.Dropdown(element);
+        });
+    });
+
     // Theme Toggle Script
     function toggleTheme() {
         const html = document.documentElement;
@@ -271,6 +289,21 @@
             localStorage.setItem('theme', 'dark');
         }
     });
+
+    // Form validation
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
 </script>
-{% endblock %}
 {% endblock %} 
