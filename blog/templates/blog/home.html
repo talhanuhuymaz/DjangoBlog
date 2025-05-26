@@ -100,4 +100,16 @@
         </div>
     </div>
 </div>
+
+<!-- Post View Modals -->
+{% if active_tab == 'following' %}
+    {% for post in following_posts %}
+        {% include 'blog/post_card_modal.html' with post=post %}
+    {% endfor %}
+{% else %}
+    {% for post in explore_posts %}
+        {% include 'blog/post_card_modal.html' with post=post %}
+    {% endfor %}
+{% endif %}
+
 {% endblock %}
