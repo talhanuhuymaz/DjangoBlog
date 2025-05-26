@@ -67,59 +67,6 @@
     </div>
 </div>
 
-<!-- Post View Modal -->
-<div class="modal fade" id="postModal{{ post.id }}" tabindex="-1" aria-labelledby="postModalLabel{{ post.id }}" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header border-0 pb-0">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="container-fluid">
-                    <div class="row">
-                        {% if post.image %}
-                        <div class="col-md-8">
-                            <div class="post-image-container text-center mb-3">
-                                <img src="{{ post.image.url }}" 
-                                     alt="Post image" 
-                                     class="img-fluid rounded"
-                                     style="max-height: 70vh; max-width: 100%; object-fit: contain;">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                        {% else %}
-                        <div class="col-12">
-                        {% endif %}
-                            <div class="d-flex align-items-center mb-4">
-                                {% if post.author.profile.avatar %}
-                                <img src="{{ post.author.profile.avatar.url }}" 
-                                     alt="Profile Avatar" 
-                                     class="avatar-circle post-avatar-image shadow-sm">
-                                {% else %}
-                                <div class="avatar-circle post-avatar bg-primary text-white shadow-sm">
-                                    {{ post.author.username|make_list|first|upper }}
-                                </div>
-                                {% endif %}
-                                <div class="ms-3">
-                                    <h6 class="mb-0 fw-semibold">
-                                        <a href="{% url 'user_profile' post.author.username %}" class="text-decoration-none">{{ post.author.username }}</a>
-                                    </h6>
-                                    <small class="text-muted">{{ post.date_posted|date:"F d, Y" }}</small>
-                                </div>
-                            </div>
-                            <h3 class="mb-4">{{ post.title }}</h3>
-                            <div class="post-content mb-4">{{ post.content }}</div>
-                            
-                            <!-- Comments Section -->
-                            {% include "blog/comments_section.html" with post=post %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
 function showPostModal(postId) {
     const modalId = `postModal${postId}`;

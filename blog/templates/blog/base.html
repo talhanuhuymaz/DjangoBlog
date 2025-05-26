@@ -446,6 +446,62 @@
 
 <body>
     <div class="container-fluid px-0">
+        <!-- Navigation -->
+        {% if user.is_authenticated %}
+        <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+            <div class="container">
+                <a class="navbar-brand" href="{% url 'home-page' %}">
+                    <i class="fas fa-blog"></i> BlogSpace
+                </a>
+                
+                <div class="d-flex align-items-center">
+                    <button onclick="toggleTheme()" class="theme-toggle d-lg-none me-2" title="Toggle theme">
+                        <i id="theme-icon-mobile" class="fas fa-moon"></i>
+                    </button>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                </div>
+
+                <div class="collapse navbar-collapse" id="navbarContent">
+                    <form class="d-flex ms-auto me-3 mt-2 mt-lg-0" method="GET" action="{% url 'home-page' %}" id="searchForm">
+                        <div class="input-group">
+                            <input class="form-control" type="search" placeholder="Search posts..." name="search" value="{{ search_query }}" aria-label="Search">
+                            <input type="hidden" name="tab" id="currentTab" value="following">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="navbar-nav align-items-center">
+                        <button onclick="toggleTheme()" class="theme-toggle d-none d-lg-flex" title="Toggle theme">
+                            <i id="theme-icon" class="fas fa-moon"></i>
+                        </button>
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle me-2"></i>
+                                {{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
+                                <li><a class="dropdown-item" href="{% url 'settings' %}"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                                <li><a class="dropdown-item" href="{% url 'my-posts' %}"><i class="fas fa-file-alt me-2"></i>My Posts</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="POST" action="{% url 'signout' %}" class="dropdown-item p-0">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Sign Out</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        {% endif %}
+
         {% if messages %}
             <div class="container mt-3">
                 {% for message in messages %}
@@ -471,7 +527,13 @@
             // Check for saved theme preference
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-bs-theme', savedTheme);
-            updateThemeIcon(savedTheme);
+            updateThemeIcons(savedTheme);
+
+            // Initialize Bootstrap components
+            var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
+            var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+                return new bootstrap.Dropdown(dropdownToggleEl);
+            });
         });
 
         function toggleTheme() {
@@ -481,13 +543,20 @@
             
             html.setAttribute('data-bs-theme', newTheme);
             localStorage.setItem('theme', newTheme);
-            updateThemeIcon(newTheme);
+            updateThemeIcons(newTheme);
         }
 
-        function updateThemeIcon(theme) {
-            const icon = document.getElementById('theme-icon');
-            if (icon) {
-                icon.className = theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+        function updateThemeIcons(theme) {
+            // Update desktop icon
+            const desktopIcon = document.getElementById('theme-icon');
+            if (desktopIcon) {
+                desktopIcon.className = theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+            }
+            
+            // Update mobile icon
+            const mobileIcon = document.getElementById('theme-icon-mobile');
+            if (mobileIcon) {
+                mobileIcon.className = theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
             }
         }
     </script>

@@ -3,60 +3,6 @@
 {% block content %}
 {% load static %}
 
-<!-- Navigation -->
-<nav class="navbar navbar-expand-lg navbar-light sticky-top">
-    <div class="container">
-        <a class="navbar-brand" href="{% url 'home-page' %}">
-            <i class="fas fa-blog"></i> BlogSpace
-        </a>
-        
-        <div class="d-flex align-items-center">
-            <button onclick="toggleTheme()" class="theme-toggle d-lg-none me-2" title="Toggle theme">
-                <i id="theme-icon-mobile" class="fas fa-moon"></i>
-            </button>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        </div>
-
-        <div class="collapse navbar-collapse" id="navbarContent">
-            <form class="d-flex ms-auto me-3 mt-2 mt-lg-0" method="GET" action="{% url 'home-page' %}" id="searchForm">
-                <div class="input-group">
-                    <input class="form-control" type="search" placeholder="Search posts..." name="search" value="{{ search_query }}" aria-label="Search">
-                    <input type="hidden" name="tab" id="currentTab" value="following">
-                    <button class="btn btn-primary" type="submit">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-            </form>
-
-            <div class="navbar-nav align-items-center">
-                <button onclick="toggleTheme()" class="theme-toggle d-none d-lg-flex" title="Toggle theme">
-                    <i id="theme-icon" class="fas fa-moon"></i>
-                </button>
-                <div class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-user-circle me-2"></i>
-                        {{ user.username }}
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
-                        <li><a class="dropdown-item" href="{% url 'settings' %}"><i class="fas fa-cog me-2"></i>Settings</a></li>
-                        <li><a class="dropdown-item" href="{% url 'my-posts' %}"><i class="fas fa-file-alt me-2"></i>My Posts</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <form method="POST" action="{% url 'signout' %}" class="dropdown-item p-0">
-                                {% csrf_token %}
-                                <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Sign Out</button>
-                            </form>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-</nav>
-
 <!-- Main Content -->
 <div class="custom-container">
     <!-- Create Post Button -->
@@ -211,6 +157,15 @@
 {% endif %}
 {% endfor %}
 
+<!-- Post View Modals -->
+{% for post in following_posts %}
+{% include "blog/post_card_modal.html" with post=post %}
+{% endfor %}
+
+{% for post in explore_posts %}
+{% include "blog/post_card_modal.html" with post=post %}
+{% endfor %}
+
 <script>
 function showPostModal(postId) {
     const modalId = `postModal${postId}`;
@@ -245,12 +200,13 @@ function likePost(button, csrfToken) {
 
 // Add active class to current tab based on URL hash and handle tab changes
 document.addEventListener('DOMContentLoaded', function() {
-    // Get the tab from URL parameters first
+    // Get the tab and post from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const tabParam = urlParams.get('tab');
-    const hash = tabParam ? `#${tabParam}` : (window.location.hash || '#following');
+    const postId = urlParams.get('post');
     
     // Set initial active tab
+    const hash = tabParam ? `#${tabParam}` : (window.location.hash || '#following');
     const tab = document.querySelector(`[data-bs-target="${hash}"]`);
     if (tab) {
         tab.click();
@@ -262,6 +218,14 @@ document.addEventListener('DOMContentLoaded', function() {
         tab.addEventListener('shown.bs.tab', function (event) {
             const activeTab = event.target.getAttribute('data-bs-target').replace('#', '');
             document.getElementById('currentTab').value = activeTab;
+            
+            // Update URL with current tab
+            const url = new URL(window.location);
+            url.searchParams.set('tab', activeTab);
+            if (postId) {
+                url.searchParams.set('post', postId);
+            }
+            window.history.replaceState({}, '', url);
         });
     });
 
@@ -270,11 +234,17 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('currentTab').value = activeTabId;
 
     // Auto-open post modal if ?post=ID is present
-    const postId = urlParams.get('post');
     if (postId) {
+        // Wait for modals to be in DOM
         setTimeout(function() {
             showPostModal(postId);
-        }, 400); // Wait for modals to be in DOM
+            
+            // Update URL with current tab and post
+            const url = new URL(window.location);
+            url.searchParams.set('tab', activeTabId);
+            url.searchParams.set('post', postId);
+            window.history.replaceState({}, '', url);
+        }, 400);
     }
 });
 </script>
