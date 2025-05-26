@@ -21,10 +21,6 @@
             </div>
             {% if user == post.author %}
             <div class="d-flex" onclick="event.stopPropagation();">
-                <button type="button" class="btn btn-outline-primary btn-sm me-2" 
-                        data-bs-toggle="modal" data-bs-target="#editPostModal{{ post.id }}">
-                    <i class="fas fa-edit"></i>
-                </button>
                 <form method="POST" action="/delete_post/{{ post.id }}/" class="ms-2">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-outline-danger btn-sm" 

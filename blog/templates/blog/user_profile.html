@@ -93,12 +93,16 @@
                             <small class="text-muted">Posts</small>
                         </div>
                         <div class="col border-end">
-                            <h5 class="mb-0">{{ profile_user.followers.count }}</h5>
-                            <small class="text-muted">Followers</small>
+                            <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#followersModal">
+                                <h5 class="mb-0">{{ profile_user.followers.count }}</h5>
+                                <small class="text-muted">Followers</small>
+                            </a>
                         </div>
                         <div class="col">
-                            <h5 class="mb-0">{{ profile_user.profile.following.count }}</h5>
-                            <small class="text-muted">Following</small>
+                            <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#followingModal">
+                                <h5 class="mb-0">{{ profile_user.profile.following.count }}</h5>
+                                <small class="text-muted">Following</small>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -211,6 +215,8 @@
         </div>
     </div>
 </div>
+
+{% include "blog/followers_list.html" %}
 
 <!-- Include Bootstrap JS and its dependencies -->
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
