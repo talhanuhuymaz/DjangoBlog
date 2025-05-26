@@ -4,31 +4,13 @@
         <a class="navbar-brand" href="{% url 'home-page' %}">
             <i class="fas fa-blog"></i> BlogSpace
         </a>
-
-        <!-- Notification and Theme Toggle for Mobile -->
-        <div class="d-flex align-items-center d-lg-none">
-            <!-- Mobile Notifications -->
-            <div class="nav-item dropdown me-2">
-                <a class="nav-link position-relative" href="#" id="mobileNotificationsDropdown" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" onclick="markNotificationsRead()">
-                    <i class="fas fa-bell fs-5"></i>
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notifications-badge d-none">
-                        0
-                    </span>
-                </a>
-                <div class="dropdown-menu dropdown-menu-end notifications-dropdown" style="width: 100vw; max-height: 80vh; overflow-y: auto;">
-                    <h6 class="dropdown-header">Notifications</h6>
-                    <div class="notifications-list">
-                        <!-- Notifications will be loaded here -->
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Mobile Theme Toggle -->
-            <button onclick="toggleTheme()" class="theme-toggle me-2" title="Toggle theme">
-                <i id="theme-icon-mobile" class="fas fa-moon"></i>
+        
+        <div class="d-flex align-items-center">
+            <!-- Theme Toggle for Mobile -->
+            <button onclick="toggleTheme()" class="theme-toggle d-lg-none me-2" title="Toggle theme">
+                <i class="fas fa-moon"></i>
             </button>
             
-            <!-- Mobile Toggle Button -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -36,9 +18,9 @@
 
         <div class="collapse navbar-collapse" id="navbarContent">
             <div class="navbar-nav ms-auto align-items-center">
-                <!-- Desktop Notifications -->
-                <div class="nav-item dropdown me-2 d-none d-lg-block">
-                    <a class="nav-link position-relative" href="#" id="desktopNotificationsDropdown" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" onclick="markNotificationsRead()">
+                <!-- Notifications Dropdown -->
+                <div class="nav-item dropdown me-2">
+                    <a class="nav-link position-relative" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" onclick="markNotificationsRead()">
                         <i class="fas fa-bell fs-5"></i>
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notifications-badge d-none">
                             0
@@ -52,9 +34,9 @@
                     </div>
                 </div>
 
-                <!-- Desktop Theme Toggle -->
-                <button onclick="toggleTheme()" class="theme-toggle d-none d-lg-block" title="Toggle theme">
-                    <i id="theme-icon" class="fas fa-moon"></i>
+                <!-- Theme Toggle for Desktop -->
+                <button onclick="toggleTheme()" class="theme-toggle d-none d-lg-flex" title="Toggle theme">
+                    <i class="fas fa-moon"></i>
                 </button>
 
                 <!-- User Dropdown -->
@@ -87,157 +69,4 @@
             </div>
         </div>
     </div>
-</nav>
-
-<style>
-/* Mobile Notification Styles */
-@media (max-width: 991.98px) {
-    .notifications-dropdown {
-        position: fixed !important;
-        top: 56px !important; /* Height of navbar */
-        left: 0 !important;
-        right: 0 !important;
-        width: 100% !important;
-        margin: 0 !important;
-        border-radius: 0 !important;
-        max-height: calc(100vh - 56px) !important;
-        border: none !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
-    }
-
-    .notifications-list {
-        padding: 0.5rem;
-    }
-
-    .notifications-list .dropdown-item {
-        padding: 1rem;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .notifications-list .dropdown-item:last-child {
-        border-bottom: none;
-    }
-
-    .navbar-nav .dropdown-menu {
-        box-shadow: none !important;
-    }
-}
-
-/* Improved Notification Item Styles */
-.notifications-list .dropdown-item {
-    white-space: normal;
-    border-radius: 0.5rem;
-    transition: background-color 0.2s ease;
-}
-
-.notifications-list .dropdown-item:hover {
-    background-color: var(--hover-color);
-}
-
-.notifications-badge {
-    transform: translate(25%, -25%) !important;
-}
-</style>
-
-<script>
-// Update both mobile and desktop notification badges
-function updateNotificationBadges(count) {
-    const badges = document.querySelectorAll('.notifications-badge');
-    badges.forEach(badge => {
-        if (count > 0) {
-            badge.textContent = count;
-            badge.classList.remove('d-none');
-        } else {
-            badge.classList.add('d-none');
-        }
-    });
-}
-
-// Update the loadNotifications function to use the new badge update function
-function loadNotifications() {
-    fetch('{% url "get_notifications" %}')
-        .then(response => response.json())
-        .then(data => {
-            const notificationsLists = document.querySelectorAll('.notifications-list');
-            
-            // Update all notification lists
-            notificationsLists.forEach(list => {
-                list.innerHTML = '';
-                if (data.notifications.length === 0) {
-                    list.innerHTML = '<div class="dropdown-item text-muted">No notifications</div>';
-                    return;
-                }
-                
-                data.notifications.forEach(notification => {
-                    const item = document.createElement('a');
-                    item.className = `dropdown-item ${notification.is_read ? 'text-muted' : 'fw-bold'}`;
-                    
-                    if (notification.type === 'like') {
-                        item.href = `/?post=${notification.post_id}`;
-                        item.innerHTML = `
-                            <i class="fas fa-heart text-danger me-2"></i>
-                            <strong>${notification.sender}</strong> liked your post "${notification.post_title}"
-                            <br>
-                            <small class="text-muted">${notification.created_at}</small>
-                        `;
-                    } else if (notification.type === 'follow') {
-                        item.href = `/profile/${notification.sender}/`;
-                        item.innerHTML = `
-                            <i class="fas fa-user-plus text-primary me-2"></i>
-                            <strong>${notification.sender}</strong> started following you
-                            <br>
-                            <small class="text-muted">${notification.created_at}</small>
-                        `;
-                    }
-                    
-                    list.appendChild(item);
-                });
-            });
-            
-            // Update notification badges
-            updateNotificationBadges(data.unread_count);
-        })
-        .catch(error => console.error('Error loading notifications:', error));
-}
-
-// Mark notifications as read
-function markNotificationsRead() {
-    fetch('{% url "mark_notifications_read" %}', {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': '{{ csrf_token }}',
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'success') {
-            // Update the UI to show all notifications as read
-            document.querySelectorAll('.notifications-list .dropdown-item').forEach(item => {
-                item.classList.add('text-muted');
-                item.classList.remove('fw-bold');
-            });
-            // Hide the notification badges
-            updateNotificationBadges(0);
-        }
-    })
-    .catch(error => console.error('Error marking notifications as read:', error));
-}
-
-// Initialize notifications when the page loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Load notifications immediately
-    loadNotifications();
-    
-    // Set up auto-refresh every 30 seconds
-    setInterval(loadNotifications, 30000);
-    
-    // Set up notification dropdowns to mark as read when opened
-    const dropdowns = document.querySelectorAll('#mobileNotificationsDropdown, #desktopNotificationsDropdown');
-    dropdowns.forEach(dropdown => {
-        dropdown.addEventListener('show.bs.dropdown', function() {
-            markNotificationsRead();
-        });
-    });
-});
-</script> 
+</nav> 

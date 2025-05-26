@@ -388,6 +388,77 @@
             .theme-toggle {
                 width: 35px;
                 height: 35px;
+                padding: 0.35rem;
+                margin-left: 0.5rem;
+            }
+
+            .navbar-nav {
+                flex-direction: row !important;
+                align-items: center;
+            }
+
+            .nav-item {
+                margin: 0 0.25rem;
+            }
+        }
+
+        /* Small mobile devices */
+        @media (max-width: 576px) {
+            .navbar-brand {
+                font-size: 1.1rem;
+            }
+
+            .card-body {
+                padding: 1rem;
+            }
+
+            .btn {
+                padding: 0.35rem 0.75rem;
+                font-size: 0.85rem;
+            }
+
+            .nav-tabs {
+                gap: 0.25rem;
+            }
+
+            .nav-tabs .nav-link {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .theme-toggle {
+                width: 32px;
+                height: 32px;
+                padding: 0.25rem;
+                margin-left: 0.25rem;
+            }
+
+            .navbar-toggler {
+                padding: 0.25rem 0.5rem;
+            }
+        }
+
+        /* Fix for navbar items alignment on mobile */
+        @media (max-width: 991px) {
+            .navbar-collapse {
+                background-color: var(--card-background);
+                padding: 1rem;
+                border-radius: 0.5rem;
+                margin-top: 0.5rem;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+            .navbar-nav {
+                margin-top: 0.5rem;
+            }
+
+            .theme-toggle {
+                margin: 0.5rem 0;
+            }
+
+            .notifications-dropdown {
+                width: 100% !important;
+                max-width: none !important;
             }
         }
 
@@ -415,31 +486,6 @@
         .nav-tabs .nav-link.active {
             color: white;
             background-color: var(--primary-color);
-        }
-
-        /* Small mobile devices */
-        @media (max-width: 576px) {
-            .navbar-brand {
-                font-size: 1.1rem;
-            }
-
-            .card-body {
-                padding: 1rem;
-            }
-
-            .btn {
-                padding: 0.35rem 0.75rem;
-                font-size: 0.85rem;
-            }
-
-            .nav-tabs {
-                gap: 0.25rem;
-            }
-
-            .nav-tabs .nav-link {
-                padding: 0.5rem 1rem;
-                font-size: 0.9rem;
-            }
         }
     </style>
 </head>
@@ -471,7 +517,7 @@
             // Check for saved theme preference
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-bs-theme', savedTheme);
-            updateThemeIcon(savedTheme);
+            updateThemeIcons(savedTheme);
         });
 
         function toggleTheme() {
@@ -481,14 +527,14 @@
             
             html.setAttribute('data-bs-theme', newTheme);
             localStorage.setItem('theme', newTheme);
-            updateThemeIcon(newTheme);
+            updateThemeIcons(newTheme);
         }
 
-        function updateThemeIcon(theme) {
-            const icon = document.getElementById('theme-icon');
-            if (icon) {
+        function updateThemeIcons(theme) {
+            // Update all theme icons (both mobile and desktop)
+            document.querySelectorAll('.theme-toggle i').forEach(icon => {
                 icon.className = theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
-            }
+            });
         }
 
         // Notifications

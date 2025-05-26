@@ -12,7 +12,6 @@
         <div class="col-md-6 mx-auto">
             <form method="GET" action="{% url 'home-page' %}" class="d-flex">
                 <input type="text" name="search" class="form-control me-2" placeholder="Search posts..." value="{{ search_query }}">
-                <input type="hidden" name="tab" value="{{ active_tab }}">
                 <button type="submit" class="btn btn-primary">Search</button>
             </form>
         </div>
@@ -40,27 +39,23 @@
     </div>
 
     <!-- Posts -->
-    <div class="row g-4">
+    <div class="row">
         {% if active_tab == 'following' %}
             {% if following_posts %}
                 {% for post in following_posts %}
-                    <div class="col-12">
-                        {% include 'blog/post_card.html' with post=post %}
-                    </div>
+                    {% include 'blog/post_card.html' with post=post %}
                 {% endfor %}
-            {% else %}
+                            {% else %}
                 <div class="col-12 text-center">
                     <p class="text-muted">Follow other users to see their posts here!</p>
                 </div>
-            {% endif %}
-        {% else %}
+                                {% endif %}
+                                        {% else %}
             {% if explore_posts %}
                 {% for post in explore_posts %}
-                    <div class="col-12">
-                        {% include 'blog/post_card.html' with post=post %}
-                    </div>
-                {% endfor %}
-            {% else %}
+                    {% include 'blog/post_card.html' with post=post %}
+                                            {% endfor %}
+                    {% else %}
                 <div class="col-12 text-center">
                     <p class="text-muted">No posts found.</p>
                 </div>
@@ -79,7 +74,7 @@
             </div>
             <form method="POST" action="{% url 'newpost' %}" enctype="multipart/form-data">
                 {% csrf_token %}
-                <div class="modal-body">
+            <div class="modal-body">
                     <div class="mb-3">
                         <label for="title" class="form-label">Title</label>
                         <input type="text" class="form-control" id="title" name="title" required>
@@ -92,12 +87,12 @@
                         <label for="image" class="form-label">Image (optional)</label>
                         <input type="file" class="form-control" id="image" name="image" accept="image/*">
                     </div>
-                </div>
+                    </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Create Post</button>
-                </div>
-            </form>
+                    </div>
+                </form>
         </div>
     </div>
 </div>

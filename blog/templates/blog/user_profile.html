@@ -3,7 +3,44 @@
 {% block content %}
 {% load static %}
 
-{% include 'blog/navbar.html' %}
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-light sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'home-page' %}">
+            <i class="fas fa-blog"></i> BlogSpace
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <div class="navbar-nav ms-auto">
+                <button onclick="toggleTheme()" class="theme-toggle" title="Toggle theme">
+                    <i id="theme-icon" class="fas fa-moon"></i>
+                </button>
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle me-2"></i>
+                        {{ user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item {% if user == profile_user %}active{% endif %}" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="{% url 'settings' %}"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                        <li><a class="dropdown-item" href="{% url 'my-posts' %}"><i class="fas fa-file-alt me-2"></i>My Posts</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="POST" action="{% url 'signout' %}" class="dropdown-item p-0">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Sign Out</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
 
 <!-- User Profile Section -->
 <div class="custom-container py-4">
@@ -290,7 +327,6 @@
 <script>
 function toggleFollow(button, csrfToken) {
     const username = button.dataset.username;
-    const currentProfileUsername = '{{ profile_user.username }}';
     
     fetch(`/toggle_follow/${username}/`, {
         method: 'POST',
@@ -318,15 +354,10 @@ function toggleFollow(button, csrfToken) {
                 text.textContent = 'Follow';
             }
             
-            // Only update counts if we're on the profile page of the user being followed/unfollowed
-            if (username === currentProfileUsername) {
-                // Update followers count
-                document.querySelectorAll('.followers-count').forEach(el => {
-                    el.textContent = data.followers_count;
-                });
-            }
-            
-            // Always update the current user's following count
+            // Update followers/following counts
+            document.querySelectorAll('.followers-count').forEach(el => {
+                el.textContent = data.followers_count;
+            });
             document.querySelectorAll('.following-count').forEach(el => {
                 el.textContent = data.following_count;
             });
