@@ -369,16 +369,34 @@ def add_comment(request, post_id):
     content = request.POST.get('content')
     
     if content:
-        Comment.objects.create(
+        comment = Comment.objects.create(
             post=post,
             author=request.user,
             content=content
         )
-        messages.success(request, 'Comment added successfully!')
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'status': 'success',
+                'comment': {
+                    'id': comment.id,
+                    'content': comment.content,
+                    'author': comment.author.username,
+                    'date_posted': comment.date_posted.strftime("%B %d, %Y"),
+                    'author_avatar_url': comment.author.profile.avatar.url if comment.author.profile.avatar else None,
+                    'author_selected_avatar': comment.author.profile.selected_avatar,
+                    'author_selected_avatar_color': comment.author.profile.selected_avatar_color,
+                }
+            })
+        else:
+            messages.success(request, 'Comment added successfully!')
+            return redirect('home-page')
     else:
-        messages.error(request, 'Comment cannot be empty!')
-    
-    return redirect('home-page')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'error', 'message': 'Comment cannot be empty!'}, status=400)
+        else:
+            messages.error(request, 'Comment cannot be empty!')
+            return redirect('home-page')
 
 @login_required
 @require_POST
@@ -386,9 +404,24 @@ def delete_comment(request, comment_id):
     comment = get_object_or_404(Comment, id=comment_id)
     
     if request.user == comment.author:
+        post_id = comment.post.id  # Get the post ID before deleting the comment
         comment.delete()
-        messages.success(request, 'Comment deleted successfully!')
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Comment deleted successfully!',
+                'post_id': post_id
+            })
+        else:
+            messages.success(request, 'Comment deleted successfully!')
     else:
-        messages.error(request, 'You can only delete your own comments!')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'status': 'error',
+                'message': 'You can only delete your own comments!'
+            }, status=403)
+        else:
+            messages.error(request, 'You can only delete your own comments!')
     
     return redirect('home-page')
