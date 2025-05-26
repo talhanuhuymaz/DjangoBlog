@@ -52,10 +52,10 @@
                     <p class="text-muted">Follow other users to see their posts here!</p>
                 </div>
             {% endif %}
-        {% else %}
+                                {% else %}
             {% if explore_posts %}
                 {% for post in explore_posts %}
-                    <div class="col-12">
+                                <div class="col-12">
                         {% include 'blog/post_card.html' with post=post %}
                     </div>
                 {% endfor %}
@@ -64,7 +64,7 @@
                     <p class="text-muted">No posts found.</p>
                 </div>
             {% endif %}
-        {% endif %}
+                    {% endif %}
     </div>
 </div>
 
