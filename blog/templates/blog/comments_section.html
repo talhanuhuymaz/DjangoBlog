@@ -1,0 +1,110 @@
+<div class="comments-section mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">
+            <i class="fas fa-comments me-2"></i>
+            Comments ({{ post.comments.count }})
+        </h5>
+    </div>
+    
+    <!-- Comment Form -->
+    <div class="comment-form-container mb-4">
+        <form method="POST" action="{% url 'add_comment' post.id %}" class="comment-form" data-post-id="{{ post.id }}">
+            {% csrf_token %}
+            <div class="d-flex gap-2">
+                {% if user.profile.avatar %}
+                <img src="{{ user.profile.avatar.url }}" 
+                     alt="Your Avatar" 
+                     class="avatar-circle comment-avatar-image shadow-sm"
+                     style="width: 40px; height: 40px;">
+                {% elif user.profile.selected_avatar %}
+                <div class="avatar-circle comment-avatar-icon avatar-dynamic-bg shadow-sm"
+                     style="--avatar-bg-color: {{ user.profile.selected_avatar_color }}; width: 40px; height: 40px;">
+                    <i class="{{ user.profile.selected_avatar }}"></i>
+                </div>
+                {% else %}
+                <div class="avatar-circle comment-avatar bg-primary text-white shadow-sm"
+                     style="width: 40px; height: 40px;">
+                    {{ user.username|make_list|first|upper }}
+                </div>
+                {% endif %}
+                <div class="flex-grow-1">
+                    <div class="form-floating">
+                        <textarea class="form-control" 
+                                  name="content" 
+                                  placeholder="Add a comment..." 
+                                  id="commentContent{{ post.id }}"
+                                  style="height: 100px"
+                                  required></textarea>
+                        <label for="commentContent{{ post.id }}">Add a comment as {{ user.username }}...</label>
+                    </div>
+                    <div class="mt-2 text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Post Comment
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Comments List -->
+    <div class="comments-list">
+        {% for comment in post.comments.all %}
+        <div class="comment mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="d-flex gap-3">
+                            {% if comment.author.profile.avatar %}
+                            <img src="{{ comment.author.profile.avatar.url }}" 
+                                 alt="Profile Avatar" 
+                                 class="avatar-circle comment-avatar-image shadow-sm"
+                                 style="width: 40px; height: 40px;">
+                            {% elif comment.author.profile.selected_avatar %}
+                            <div class="avatar-circle comment-avatar-icon avatar-dynamic-bg shadow-sm"
+                                 style="--avatar-bg-color: {{ comment.author.profile.selected_avatar_color }}; width: 40px; height: 40px;">
+                                <i class="{{ comment.author.profile.selected_avatar }}"></i>
+                            </div>
+                            {% else %}
+                            <div class="avatar-circle comment-avatar bg-primary text-white shadow-sm"
+                                 style="width: 40px; height: 40px;">
+                                {{ comment.author.username|make_list|first|upper }}
+                            </div>
+                            {% endif %}
+                            <div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <h6 class="mb-0 fw-semibold">{{ comment.author.username }}</h6>
+                                    <small class="text-muted">•</small>
+                                    <small class="text-muted">{{ comment.date_posted|date:"F d, Y" }}</small>
+                                </div>
+                                <div class="comment-content mt-2">
+                                    {{ comment.content }}
+                                </div>
+                            </div>
+                        </div>
+                        {% if user == comment.author %}
+                        <div class="ms-2">
+                            <form method="POST" action="{% url 'delete_comment' comment.id %}" class="delete-comment-form">
+                                {% csrf_token %}
+                                <button type="submit" 
+                                        class="btn btn-link text-danger p-0"
+                                        title="Delete comment">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-4">
+            <div class="text-muted mb-3">
+                <i class="fas fa-comments fa-2x"></i>
+            </div>
+            <p class="text-muted mb-0">No comments yet. Be the first to comment!</p>
+        </div>
+        {% endfor %}
+    </div>
+</div> 
