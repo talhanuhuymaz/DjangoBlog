@@ -338,9 +338,13 @@ def profile_view(request, username):
         
         posts = Post.objects.filter(author=user).order_by('-date_posted')
         
+        # Get followers and following lists, filtering out invalid users
+        followers = user.followers.exclude(username='').all()
+        following = user.profile.following.exclude(username='').all()
+        
         # Get followers and following counts
-        followers_count = user.followers.count()
-        following_count = user.profile.following.count()
+        followers_count = followers.count()
+        following_count = following.count()
         
         # Get liked posts for the current user
         liked_posts = []
@@ -350,6 +354,8 @@ def profile_view(request, username):
         context = {
             'profile_user': user,
             'posts': posts,
+            'followers': followers,
+            'following': following,
             'followers_count': followers_count,
             'following_count': following_count,
             'liked_posts': liked_posts,

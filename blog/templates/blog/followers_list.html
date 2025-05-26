@@ -8,7 +8,7 @@
             </div>
             <div class="modal-body">
                 <ul class="list-group list-group-flush">
-                    {% for follower in profile_user.followers.all %}
+                    {% for follower in followers %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center">
                             {% if follower.profile.avatar %}
@@ -57,31 +57,31 @@
             </div>
             <div class="modal-body">
                 <ul class="list-group list-group-flush">
-                    {% for following in profile_user.profile.following.all %}
+                    {% for following_user in following %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center">
-                            {% if following.profile.avatar %}
-                            <img src="{{ following.profile.avatar.url }}" 
+                            {% if following_user.profile.avatar %}
+                            <img src="{{ following_user.profile.avatar.url }}" 
                                  alt="Profile Avatar" 
                                  class="rounded-circle"
                                  style="width: 40px; height: 40px; object-fit: cover;">
                             {% else %}
                             <div class="rounded-circle d-flex align-items-center justify-content-center text-white bg-primary"
                                  style="width: 40px; height: 40px;">
-                                {{ following.username.0|upper }}
+                                {{ following_user.username.0|upper }}
                             </div>
                             {% endif %}
-                            <a href="{% url 'user_profile' following.username %}" class="ms-3 text-decoration-none">
-                                {{ following.username }}
+                            <a href="{% url 'user_profile' following_user.username %}" class="ms-3 text-decoration-none">
+                                {{ following_user.username }}
                             </a>
                         </div>
-                        {% if user != following %}
+                        {% if user != following_user %}
                         <button type="button" 
-                                class="btn btn-sm {% if following in user.profile.following.all %}btn-outline-primary{% else %}btn-primary{% endif %} follow-button"
-                                data-username="{{ following.username }}"
+                                class="btn btn-sm {% if following_user in user.profile.following.all %}btn-outline-primary{% else %}btn-primary{% endif %} follow-button"
+                                data-username="{{ following_user.username }}"
                                 onclick="toggleFollow(this, '{{ csrf_token }}')">
-                            <i class="fas {% if following in user.profile.following.all %}fa-user-minus{% else %}fa-user-plus{% endif %} me-1"></i>
-                            <span class="follow-text">{% if following in user.profile.following.all %}Unfollow{% else %}Follow{% endif %}</span>
+                            <i class="fas {% if following_user in user.profile.following.all %}fa-user-minus{% else %}fa-user-plus{% endif %} me-1"></i>
+                            <span class="follow-text">{% if following_user in user.profile.following.all %}Unfollow{% else %}Follow{% endif %}</span>
                         </button>
                         {% endif %}
                     </li>
