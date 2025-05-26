@@ -22,6 +22,15 @@ python manage.py collectstatic --noinput --clear
 
 # Create superuser using a Python script
 echo "Creating superuser..."
-echo "from django.contrib.auth.models import User; User.objects.filter(username='admin').delete(); User.objects.create_superuser('admin', 'admin@example.com', 'admin123')" | python manage.py shell
+echo "Attempting to delete existing user 'admin' and create a new superuser..."
+echo "from django.contrib.auth.models import User; 
+try:
+    User.objects.filter(username='admin').delete()
+    User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
+    print('Superuser created successfully')
+except Exception as e:
+    print(f'Error during superuser creation: {str(e)}')" | python manage.py shell
+
+echo "Superuser creation process completed."
 
 echo "Build completed." 
