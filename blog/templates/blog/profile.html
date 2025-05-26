@@ -64,12 +64,18 @@
                     <div class="card-body">
                         <div class="text-center mb-4">
                             {% if user.profile.avatar %}
-                            <img src="{{ user.profile.avatar.url }}" 
-                                 alt="Profile Picture" 
-                                 class="avatar-circle profile-avatar-image shadow mb-3">
+                            <div class="d-flex justify-content-center">
+                                <img src="{{ user.profile.avatar.url }}" 
+                                     alt="Profile Picture" 
+                                     class="avatar-circle profile-avatar-image shadow mb-3"
+                                     style="width: 150px; height: 150px; object-fit: cover;">
+                            </div>
                             {% else %}
-                            <div class="avatar-circle profile-avatar bg-primary text-white shadow mb-3 mx-auto">
-                                {{ user.username|make_list|first|upper }}
+                            <div class="d-flex justify-content-center">
+                                <div class="avatar-circle profile-avatar bg-primary text-white shadow mb-3"
+                                     style="width: 150px; height: 150px; font-size: 3rem; display: flex; align-items: center; justify-content: center;">
+                                    {{ user.username|make_list|first|upper }}
+                                </div>
                             </div>
                             {% endif %}
                             <h4 class="mb-0">{{ user.username }}</h4>
