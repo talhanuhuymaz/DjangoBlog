@@ -1,48 +1,35 @@
 {% extends 'blog/base.html' %}
 {% block title %}Profile{% endblock %}
-
-{% block extra_css %}
-<style>
-    /* Add any profile-specific styles here */
-</style>
-{% endblock %}
-
 {% block content %}
 {% load static %}
 
 <!-- Navigation -->
 <nav class="navbar navbar-expand-lg navbar-light sticky-top">
     <div class="container">
-        <a class="navbar-brand" href="{% url 'home-page' %}">
+        <a class="navbar-brand" href="/home/">
             <i class="fas fa-blog"></i> BlogSpace
         </a>
         
-        <div class="d-flex align-items-center">
-            <button onclick="toggleTheme()" class="theme-toggle d-lg-none me-2" title="Toggle theme">
-                <i id="theme-icon-mobile" class="fas fa-moon"></i>
-            </button>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-        </div>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
         <div class="collapse navbar-collapse" id="navbarContent">
-            <div class="navbar-nav ms-auto align-items-center">
-                <button onclick="toggleTheme()" class="theme-toggle d-none d-lg-flex" title="Toggle theme">
+            <div class="navbar-nav ms-auto">
+                <button onclick="toggleTheme()" class="theme-toggle" title="Toggle theme">
                     <i id="theme-icon" class="fas fa-moon"></i>
                 </button>
                 <div class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
                         <i class="fas fa-user-circle me-2"></i>
                         {{ user.username }}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item active" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
-                        <li><a class="dropdown-item" href="{% url 'settings' %}"><i class="fas fa-cog me-2"></i>Settings</a></li>
-                        <li><a class="dropdown-item" href="{% url 'my-posts' %}"><i class="fas fa-file-alt me-2"></i>My Posts</a></li>
+                        <li><a class="dropdown-item active" href="/profile/"><i class="fas fa-user me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="/myposts/"><i class="fas fa-file-alt me-2"></i>My Posts</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
-                            <form method="POST" action="{% url 'signout' %}" class="dropdown-item p-0">
+                            <form method="POST" action="/signout/" class="dropdown-item p-0">
                                 {% csrf_token %}
                                 <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Sign Out</button>
                             </form>
@@ -175,7 +162,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form method="POST" action="{% url 'change_password' %}">
+                <form method="POST" action="/change_password/">
                     {% csrf_token %}
                     <div class="mb-4">
                         <label for="currentPassword" class="form-label">Current Password</label>
@@ -227,83 +214,4 @@
         </div>
     </div>
 </div>
-
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    // Initialize Bootstrap components
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize dropdowns
-        var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
-        var dropdownList = dropdownElementList.map(function(element) {
-            return new bootstrap.Dropdown(element);
-        });
-    });
-
-    // Theme Toggle Script
-    function toggleTheme() {
-        const html = document.documentElement;
-        const themeIcon = document.getElementById('theme-icon');
-        const themeIconMobile = document.getElementById('theme-icon-mobile');
-        
-        if (html.getAttribute('data-bs-theme') === 'dark') {
-            html.setAttribute('data-bs-theme', 'light');
-            themeIcon.classList.remove('fa-sun');
-            themeIcon.classList.add('fa-moon');
-            themeIconMobile.classList.remove('fa-sun');
-            themeIconMobile.classList.add('fa-moon');
-            localStorage.setItem('theme', 'light');
-        } else {
-            html.setAttribute('data-bs-theme', 'dark');
-            themeIcon.classList.remove('fa-moon');
-            themeIcon.classList.add('fa-sun');
-            themeIconMobile.classList.remove('fa-moon');
-            themeIconMobile.classList.add('fa-sun');
-            localStorage.setItem('theme', 'dark');
-        }
-    }
-
-    // Set initial theme based on localStorage or system preference
-    document.addEventListener('DOMContentLoaded', () => {
-        const savedTheme = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const html = document.documentElement;
-        const themeIcon = document.getElementById('theme-icon');
-        const themeIconMobile = document.getElementById('theme-icon-mobile');
-
-        if (savedTheme) {
-            html.setAttribute('data-bs-theme', savedTheme);
-            if (savedTheme === 'dark') {
-                themeIcon.classList.remove('fa-moon');
-                themeIcon.classList.add('fa-sun');
-                themeIconMobile.classList.remove('fa-moon');
-                themeIconMobile.classList.add('fa-sun');
-            }
-        } else if (prefersDark) {
-            html.setAttribute('data-bs-theme', 'dark');
-            themeIcon.classList.remove('fa-moon');
-            themeIcon.classList.add('fa-sun');
-            themeIconMobile.classList.remove('fa-moon');
-            themeIconMobile.classList.add('fa-sun');
-            localStorage.setItem('theme', 'dark');
-        }
-    });
-
-    // Form validation
-    (function () {
-        'use strict'
-        var forms = document.querySelectorAll('.needs-validation')
-        Array.prototype.slice.call(forms)
-            .forEach(function (form) {
-                form.addEventListener('submit', function (event) {
-                    if (!form.checkValidity()) {
-                        event.preventDefault()
-                        event.stopPropagation()
-                    }
-                    form.classList.add('was-validated')
-                }, false)
-            })
-    })()
-</script>
 {% endblock %} 
