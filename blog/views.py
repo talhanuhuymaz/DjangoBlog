@@ -599,14 +599,3 @@ def get_notifications(request):
 def mark_notifications_read(request):
     request.user.notifications.filter(is_read=False).update(is_read=True)
     return JsonResponse({'status': 'success'})
-
-@login_required
-def notifications_page(request):
-    notifications = request.user.notifications.all()
-    unread_count = request.user.notifications.filter(is_read=False).count()
-    
-    context = {
-        'notifications': notifications,
-        'unread_count': unread_count
-    }
-    return render(request, 'blog/notifications.html', context)

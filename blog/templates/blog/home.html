@@ -3,303 +3,97 @@
 {% block content %}
 {% load static %}
 
-<!-- Navigation -->
-<nav class="navbar navbar-expand-lg navbar-light sticky-top">
-    <div class="container">
-        <a class="navbar-brand" href="{% url 'home-page' %}">
-            <i class="fas fa-blog"></i> BlogSpace
-        </a>
-        
-        <div class="d-flex align-items-center">
-            <button onclick="toggleTheme()" class="theme-toggle d-lg-none me-2" title="Toggle theme">
-                <i id="theme-icon-mobile" class="fas fa-moon"></i>
-            </button>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        </div>
-
-        <div class="collapse navbar-collapse" id="navbarContent">
-            <form class="d-flex ms-auto me-3 mt-2 mt-lg-0" method="GET" action="{% url 'home-page' %}" id="searchForm">
-                <div class="input-group">
-                    <input class="form-control" type="search" placeholder="Search posts..." name="search" value="{{ search_query }}" aria-label="Search">
-                    <input type="hidden" name="tab" id="currentTab" value="following">
-                    <button class="btn btn-primary" type="submit">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-            </form>
-
-            <div class="navbar-nav align-items-center">
-                <button onclick="toggleTheme()" class="theme-toggle d-none d-lg-flex" title="Toggle theme">
-                    <i id="theme-icon" class="fas fa-moon"></i>
-                </button>
-                <div class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-user-circle me-2"></i>
-                        {{ user.username }}
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
-                        <li><a class="dropdown-item" href="{% url 'settings' %}"><i class="fas fa-cog me-2"></i>Settings</a></li>
-                        <li><a class="dropdown-item" href="{% url 'my-posts' %}"><i class="fas fa-file-alt me-2"></i>My Posts</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <form method="POST" action="{% url 'signout' %}" class="dropdown-item p-0">
-                                {% csrf_token %}
-                                <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Sign Out</button>
-                            </form>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-</nav>
+{% include 'blog/navbar.html' %}
 
 <!-- Main Content -->
-<div class="custom-container">
-    <!-- Create Post Button -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <button type="button" class="btn btn-primary w-100 w-md-auto" data-bs-toggle="modal" data-bs-target="#newPostModal">
-            <i class="fas fa-plus-circle me-2"></i>Create New Post
-        </button>
+<div class="container mt-4">
+    <!-- Search Bar -->
+    <div class="row mb-4">
+        <div class="col-md-6 mx-auto">
+            <form method="GET" action="{% url 'home-page' %}" class="d-flex">
+                <input type="text" name="search" class="form-control me-2" placeholder="Search posts..." value="{{ search_query }}">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
+        </div>
     </div>
 
     <!-- Feed Tabs -->
-    <ul class="nav nav-tabs nav-fill mb-4" id="feedTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link {% if active_tab == 'following' %}active{% endif %}" 
-                    id="following-tab" 
-                    data-bs-toggle="tab" 
-                    data-bs-target="#following" 
-                    type="button" 
-                    role="tab" 
-                    aria-controls="following" 
-                    aria-selected="{% if active_tab == 'following' %}true{% else %}false{% endif %}">
-                <i class="fas fa-users me-2"></i>Following
-                            </button>
+    <ul class="nav nav-tabs justify-content-center mb-4">
+        <li class="nav-item">
+            <a class="nav-link {% if active_tab == 'following' %}active{% endif %}" href="?tab=following{% if search_query %}&search={{ search_query }}{% endif %}">
+                Following
+            </a>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link {% if active_tab == 'explore' %}active{% endif %}" 
-                    id="explore-tab" 
-                    data-bs-toggle="tab" 
-                    data-bs-target="#explore" 
-                    type="button" 
-                    role="tab" 
-                    aria-controls="explore" 
-                    aria-selected="{% if active_tab == 'explore' %}true{% else %}false{% endif %}">
-                <i class="fas fa-compass me-2"></i>Explore
-                                </button>
+        <li class="nav-item">
+            <a class="nav-link {% if active_tab == 'explore' %}active{% endif %}" href="?tab=explore{% if search_query %}&search={{ search_query }}{% endif %}">
+                Explore
+            </a>
         </li>
     </ul>
 
-    <!-- Tab Content -->
-    <div class="tab-content" id="feedTabsContent">
-        <!-- Following Tab -->
-        <div class="tab-pane fade {% if active_tab == 'following' %}show active{% endif %}" 
-             id="following" 
-             role="tabpanel" 
-             aria-labelledby="following-tab">
-            <div class="row g-4">
-                {% for post in following_posts %}
-                <div class="col-12 fade-in">
-                    {% include "blog/post_card.html" with post=post %}
-                </div>
-                {% empty %}
-                                <div class="col-12">
-                    <div class="card">
-                        <div class="card-body text-center py-5">
-                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                            <h4>No posts from people you follow</h4>
-                            <p class="mb-3">Start following people to see their posts here!</p>
-                            <a href="#explore" class="btn btn-primary" data-bs-toggle="tab" data-bs-target="#explore">
-                                <i class="fas fa-compass me-2"></i>Explore Posts
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+    <!-- New Post Button -->
+    <div class="text-center mb-4">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newPostModal">
+            <i class="fas fa-plus me-2"></i>New Post
+        </button>
+    </div>
 
-        <!-- Explore Tab -->
-        <div class="tab-pane fade {% if active_tab == 'explore' %}show active{% endif %}" 
-             id="explore" 
-             role="tabpanel" 
-             aria-labelledby="explore-tab">
-            <div class="row g-4">
-                {% for post in explore_posts %}
-                <div class="col-12 fade-in">
-                    {% include "blog/post_card.html" with post=post %}
-        </div>
-        {% empty %}
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body text-center py-5">
-                    {% if search_query %}
-                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                        <h4>No results found for "{{ search_query }}"</h4>
-                        <p class="mb-0">Try a different search term or <a href="{% url 'home-page' %}" class="text-primary">view all posts</a>.</p>
-                    {% else %}
-                        <i class="fas fa-feather-alt fa-3x text-muted mb-3"></i>
-                        <h4>No posts yet</h4>
-                        <p class="mb-0">Be the first to create a post!</p>
-                    {% endif %}
+    <!-- Posts -->
+    <div class="row">
+        {% if active_tab == 'following' %}
+            {% if following_posts %}
+                {% for post in following_posts %}
+                    {% include 'blog/post_card.html' with post=post %}
+                {% endfor %}
+            {% else %}
+                <div class="col-12 text-center">
+                    <p class="text-muted">Follow other users to see their posts here!</p>
                 </div>
-            </div>
-        </div>
-        {% endfor %}
-            </div>
-        </div>
+            {% endif %}
+        {% else %}
+            {% if explore_posts %}
+                {% for post in explore_posts %}
+                    {% include 'blog/post_card.html' with post=post %}
+                {% endfor %}
+            {% else %}
+                <div class="col-12 text-center">
+                    <p class="text-muted">No posts found.</p>
+                </div>
+            {% endif %}
+        {% endif %}
     </div>
 </div>
 
 <!-- New Post Modal -->
-{% include "blog/modals/new_post_modal.html" %}
-
-<!-- Edit Post Modals -->
-{% for post in explore_posts|add:following_posts %}
-{% if user == post.author %}
-<div class="modal fade" id="editPostModal{{ post.id }}" tabindex="-1" aria-labelledby="editPostModalLabel{{ post.id }}" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+<div class="modal fade" id="newPostModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editPostModalLabel{{ post.id }}">Edit Post</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">Create New Post</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <form method="POST" action="{% url 'edit_post' post.id %}/" enctype="multipart/form-data">
-                    {% csrf_token %}
+            <form method="POST" action="{% url 'newpost' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
                     <div class="mb-3">
-                        <label for="postTitle{{ post.id }}" class="form-label">Title</label>
-                        <input type="text" class="form-control" id="postTitle{{ post.id }}" name="title" value="{{ post.title }}" required>
-                    </div>
-                    {% if post.image %}
-                    <div class="mb-3">
-                        <label class="form-label">Current Image</label>
-                        <div class="d-flex align-items-center">
-                            <img src="{{ post.image.url }}" alt="Current post image" class="img-thumbnail me-3" style="max-height: 100px;">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="deleteImage{{ post.id }}" name="delete_image" value="true">
-                                <label class="form-check-label" for="deleteImage{{ post.id }}">
-                                    Delete current image
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    <div class="mb-3">
-                        <label for="postImage{{ post.id }}" class="form-label">New Image (optional)</label>
-                        <input type="file" class="form-control" id="postImage{{ post.id }}" name="image" accept="image/*">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
                     </div>
                     <div class="mb-3">
-                        <label for="postContent{{ post.id }}" class="form-label">Content</label>
-                        <textarea class="form-control" id="postContent{{ post.id }}" name="content" rows="5" required>{{ post.content }}</textarea>
+                        <label for="content" class="form-label">Content</label>
+                        <textarea class="form-control" id="content" name="content" rows="5" required></textarea>
                     </div>
-                    <div class="modal-footer px-0 pb-0">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-2"></i>Save Changes
-                        </button>
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Image (optional)</label>
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*">
                     </div>
-                </form>
-            </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Post</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-{% endif %}
-{% endfor %}
-
-<!-- Post View Modals -->
-{% for post in following_posts %}
-{% include "blog/post_card_modal.html" with post=post %}
-{% endfor %}
-
-{% for post in explore_posts %}
-{% include "blog/post_card_modal.html" with post=post %}
-{% endfor %}
-
-<script>
-function showPostModal(postId) {
-    const modalId = `postModal${postId}`;
-    const modal = new bootstrap.Modal(document.getElementById(modalId));
-    modal.show();
-}
-
-function likePost(button, csrfToken) {
-    const postId = button.dataset.postId;
-    
-    fetch('/like/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': csrfToken
-        },
-        body: `post_id=${postId}`
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Update like button state
-        if (data.liked) {
-            button.classList.add('liked');
-        } else {
-            button.classList.remove('liked');
-        }
-        // Update likes count
-        button.querySelector('.likes-count').textContent = data.likes_count;
-    })
-    .catch(error => console.error('Error:', error));
-}
-
-// Add active class to current tab based on URL hash and handle tab changes
-document.addEventListener('DOMContentLoaded', function() {
-    // Get the tab and post from URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const tabParam = urlParams.get('tab');
-    const postId = urlParams.get('post');
-    
-    // Set initial active tab
-    const hash = tabParam ? `#${tabParam}` : (window.location.hash || '#following');
-    const tab = document.querySelector(`[data-bs-target="${hash}"]`);
-    if (tab) {
-        tab.click();
-    }
-
-    // Update hidden input when tabs change
-    const tabs = document.querySelectorAll('[data-bs-toggle="tab"]');
-    tabs.forEach(tab => {
-        tab.addEventListener('shown.bs.tab', function (event) {
-            const activeTab = event.target.getAttribute('data-bs-target').replace('#', '');
-            document.getElementById('currentTab').value = activeTab;
-            
-            // Update URL with current tab
-            const url = new URL(window.location);
-            url.searchParams.set('tab', activeTab);
-            if (postId) {
-                url.searchParams.set('post', postId);
-            }
-            window.history.replaceState({}, '', url);
-        });
-    });
-
-    // Set initial value of currentTab
-    const activeTabId = document.querySelector('.nav-link.active').getAttribute('data-bs-target').replace('#', '');
-    document.getElementById('currentTab').value = activeTabId;
-
-    // Auto-open post modal if ?post=ID is present
-    if (postId) {
-        // Wait for modals to be in DOM
-        setTimeout(function() {
-            showPostModal(postId);
-            
-            // Update URL with current tab and post
-            const url = new URL(window.location);
-            url.searchParams.set('tab', activeTabId);
-            url.searchParams.set('post', postId);
-            window.history.replaceState({}, '', url);
-        }, 400);
-    }
-});
-</script>
 {% endblock %}
