@@ -401,27 +401,37 @@ def add_comment(request, post_id):
 @login_required
 @require_POST
 def delete_comment(request, comment_id):
-    comment = get_object_or_404(Comment, id=comment_id)
-    
-    if request.user == comment.author:
-        post_id = comment.post.id  # Get the post ID before deleting the comment
-        comment.delete()
+    try:
+        comment = get_object_or_404(Comment, id=comment_id)
         
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({
-                'status': 'success',
-                'message': 'Comment deleted successfully!',
-                'post_id': post_id
-            })
+        if request.user == comment.author:
+            post_id = comment.post.id  # Get the post ID before deleting the comment
+            comment.delete()
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Comment deleted successfully!',
+                    'post_id': post_id
+                })
+            else:
+                messages.success(request, 'Comment deleted successfully!')
+                return redirect('home-page')
         else:
-            messages.success(request, 'Comment deleted successfully!')
-    else:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'You can only delete your own comments!'
+                }, status=403)
+            else:
+                messages.error(request, 'You can only delete your own comments!')
+                return redirect('home-page')
+    except Comment.DoesNotExist:
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
                 'status': 'error',
-                'message': 'You can only delete your own comments!'
-            }, status=403)
+                'message': 'Comment not found'
+            }, status=404)
         else:
-            messages.error(request, 'You can only delete your own comments!')
-    
-    return redirect('home-page')
+            messages.error(request, 'Comment not found')
+            return redirect('home-page')
