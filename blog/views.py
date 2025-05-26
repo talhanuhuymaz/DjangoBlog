@@ -427,13 +427,13 @@ def add_comment(request, post_id):
             })
         else:
             messages.success(request, 'Comment added successfully!')
-            return redirect('home-page')
+            return redirect(f'{reverse_lazy("home-page")}?post={post.id}')
     else:
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'status': 'error', 'message': 'Comment cannot be empty!'}, status=400)
         else:
             messages.error(request, 'Comment cannot be empty!')
-            return redirect('home-page')
+            return redirect(f'{reverse_lazy("home-page")}?post={post.id}')
 
 @login_required
 @require_POST
@@ -453,7 +453,7 @@ def delete_comment(request, comment_id):
                 })
             else:
                 messages.success(request, 'Comment deleted successfully!')
-                return redirect('home-page')
+                return redirect(f'{reverse_lazy("home-page")}?post={post_id}')
         else:
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
