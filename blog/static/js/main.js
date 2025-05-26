@@ -1,11 +1,20 @@
 // Function to toggle theme
 function toggleTheme() {
+  const html = document.documentElement;
   const body = document.body;
-  const isDark = body.classList.toggle("dark-theme");
-  const icons = document.querySelectorAll("#theme-icon, #theme-icon-mobile");
+  const currentTheme = html.getAttribute("data-bs-theme");
+  const newTheme = currentTheme === "light" ? "dark" : "light";
 
+  // Update HTML theme attribute
+  html.setAttribute("data-bs-theme", newTheme);
+
+  // Update body class for custom styles
+  body.classList.toggle("dark-theme");
+
+  // Update theme icons
+  const icons = document.querySelectorAll("#theme-icon, #theme-icon-mobile");
   icons.forEach((icon) => {
-    if (isDark) {
+    if (newTheme === "dark") {
       icon.classList.remove("fa-moon");
       icon.classList.add("fa-sun");
     } else {
@@ -15,7 +24,7 @@ function toggleTheme() {
   });
 
   // Save preference
-  localStorage.setItem("theme", isDark ? "dark" : "light");
+  localStorage.setItem("theme", newTheme);
 }
 
 // Function to show post modal
@@ -89,19 +98,31 @@ function toggleFollow(button, csrfToken) {
     .catch((error) => console.error("Error:", error));
 }
 
-// Initialize theme on page load
+// Initialize theme and other functionality on page load
 document.addEventListener("DOMContentLoaded", function () {
   // Apply saved theme preference
-  const savedTheme = localStorage.getItem("theme");
+  const savedTheme = localStorage.getItem("theme") || "light";
+  const html = document.documentElement;
+  const body = document.body;
+
+  // Set theme
+  html.setAttribute("data-bs-theme", savedTheme);
   if (savedTheme === "dark") {
-    document.body.classList.add("dark-theme");
-    document
-      .querySelectorAll("#theme-icon, #theme-icon-mobile")
-      .forEach((icon) => {
+    body.classList.add("dark-theme");
+  }
+
+  // Update theme icons
+  document
+    .querySelectorAll("#theme-icon, #theme-icon-mobile")
+    .forEach((icon) => {
+      if (savedTheme === "dark") {
         icon.classList.remove("fa-moon");
         icon.classList.add("fa-sun");
-      });
-  }
+      } else {
+        icon.classList.remove("fa-sun");
+        icon.classList.add("fa-moon");
+      }
+    });
 
   // Handle tab functionality if present
   const searchForm = document.getElementById("searchForm");
