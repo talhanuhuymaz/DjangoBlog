@@ -550,7 +550,7 @@ def delete_account(request):
             user.delete()
             
             messages.success(request, 'Your account has been permanently deleted.')
-            return redirect('login')
+            return redirect('login-page')
         else:
             messages.error(request, 'Incorrect password. Please try again.')
             return redirect('settings')
