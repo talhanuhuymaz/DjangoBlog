@@ -328,9 +328,16 @@ def change_password(request):
 def profile_view(request, username):
     user = get_object_or_404(User, username=username)
     posts = Post.objects.filter(author=user).order_by('-date_posted')
+    
+    # Get followers and following counts
+    followers_count = user.followers.count()
+    following_count = user.profile.following.count()
+    
     context = {
         'profile_user': user,
         'posts': posts,
+        'followers_count': followers_count,
+        'following_count': following_count,
     }
     return render(request, 'blog/user_profile.html', context)
 
