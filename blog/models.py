@@ -13,7 +13,7 @@ class Post(models.Model):
     content = models.TextField()
     date_posted = models.DateTimeField(default=timezone.now)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='post_images/', storage=MediaCloudinaryStorage(), null=True, blank=True)
+    image = models.ImageField(upload_to='post_images/', storage=MediaCloudinaryStorage(), null=True, blank=True, max_length=500)
     likes = models.ManyToManyField(User, related_name='post_likes', blank=True)
 
     def __str__(self):
