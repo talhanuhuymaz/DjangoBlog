@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from .models import Post, Profile, Comment, Notification
+from .models import Post, Profile, Comment, Notification, PostImage
 from django.conf import settings
 import os
 from django.core.exceptions import ValidationError
@@ -136,8 +136,12 @@ def new_post(request):
                         messages.error(request, 'File must be an image')
                         return redirect('home-page')
                     
-                    post.image = image
-                    post.save()
+                    # Create PostImage instance
+                    PostImage.objects.create(
+                        post=post,
+                        image=image,
+                        order=0
+                    )
                 
                 messages.success(request, 'Post created successfully!')
                 return redirect('home-page')
@@ -196,9 +200,10 @@ def edit_post(request, post_id):
                 post.content = content
                 
                 # Handle image
-                if delete_image and post.image:
-                    post.image.delete()
-                    post.image = None
+                if delete_image:
+                    # Delete all existing images
+                    for post_image in post.images.all():
+                        post_image.delete()
                 elif image:
                     # Validate file size (max 5MB)
                     if image.size > 5 * 1024 * 1024:
@@ -210,10 +215,16 @@ def edit_post(request, post_id):
                         messages.error(request, 'File must be an image')
                         return redirect('home-page')
                     
-                    # Delete old image if exists
-                    if post.image:
-                        post.image.delete()
-                    post.image = image
+                    # Delete existing images
+                    for post_image in post.images.all():
+                        post_image.delete()
+                    
+                    # Create new PostImage instance
+                    PostImage.objects.create(
+                        post=post,
+                        image=image,
+                        order=0
+                    )
                 
                 post.save()
                 messages.success(request, 'Post updated successfully!')
