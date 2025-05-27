@@ -13,6 +13,7 @@ class Post(models.Model):
     content = models.TextField()
     date_posted = models.DateTimeField(default=timezone.now)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='post_images/', storage=MediaCloudinaryStorage(), null=True, blank=True)
     likes = models.ManyToManyField(User, related_name='post_likes', blank=True)
 
     def __str__(self):
@@ -22,6 +23,9 @@ class Post(models.Model):
         return self.likes.count()
 
     def delete(self, *args, **kwargs):
+        # Delete the image file when the post is deleted
+        if self.image:
+            self.image.delete()
         super().delete(*args, **kwargs)
 
 class Comment(models.Model):
