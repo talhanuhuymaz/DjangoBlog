@@ -13,6 +13,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.views.decorators.http import require_POST
 from django.urls import reverse_lazy
+import cloudinary
+import cloudinary.uploader
 
 # Create your views here.
 def test(request):
@@ -233,38 +235,34 @@ def test_image(request, image_name):
 @login_required
 def settings(request):
     if request.method == 'POST':
-        # Get form data
-        user = request.user
         username = request.POST.get('username')
         email = request.POST.get('email')
+        password = request.POST.get('password')
         avatar = request.FILES.get('avatar')
         delete_avatar = request.POST.get('delete_avatar')
-        password = request.POST.get('password')
         
         # Verify password
-        if not password or not user.check_password(password):
+        if not request.user.check_password(password):
             messages.error(request, 'Current password is incorrect')
             return redirect('settings')
         
-        # Check if username exists (excluding current user)
-        if User.objects.filter(username=username).exclude(id=user.id).exists():
-            messages.error(request, 'Username already exists')
-            return redirect('settings')
-        
-        # Check if email exists (excluding current user)
-        if User.objects.filter(email=email).exclude(id=user.id).exists():
-            messages.error(request, 'Email already exists')
+        # Validate username and email
+        if not username or not email:
+            messages.error(request, 'Please fill in all required fields')
             return redirect('settings')
         
         try:
             # Update user information
+            user = request.user
             user.username = username
             user.email = email
             user.save()
             
             # Handle avatar update
             if delete_avatar and user.profile.avatar:
-                user.profile.avatar.delete()
+                # Delete the image from Cloudinary
+                if hasattr(user.profile.avatar, 'public_id'):
+                    cloudinary.uploader.destroy(user.profile.avatar.public_id)
                 user.profile.avatar = None
             elif avatar:
                 # Validate file size (max 2MB)
@@ -277,9 +275,11 @@ def settings(request):
                     messages.error(request, 'File must be an image')
                     return redirect('settings')
                 
-                # Delete old avatar if it exists
-                if user.profile.avatar:
-                    user.profile.avatar.delete()
+                # Delete old avatar from Cloudinary if it exists
+                if user.profile.avatar and hasattr(user.profile.avatar, 'public_id'):
+                    cloudinary.uploader.destroy(user.profile.avatar.public_id)
+                
+                # Upload new avatar
                 user.profile.avatar = avatar
             
             user.profile.save()
