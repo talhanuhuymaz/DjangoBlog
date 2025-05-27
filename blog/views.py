@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from .models import Post, Profile, Comment, Notification
+from .models import Post, Profile, Comment, Notification, PostImage
 from django.conf import settings
 import os
 from django.core.exceptions import ValidationError
@@ -109,44 +109,35 @@ def home(request):
     return render(request, 'blog/home.html', context)
 
 @login_required
-def new_post(request):
+def create_post(request):
     if request.method == 'POST':
         title = request.POST.get('title')
         content = request.POST.get('content')
-        image = request.FILES.get('image')
-        
-        if title and content:
-            try:
-                post = Post.objects.create(
-                    title=title,
-                    content=content,
-                    author=request.user
-                )
-                
-                if image:
-                    # Validate file size (max 5MB)
-                    if image.size > 5 * 1024 * 1024:
-                        post.delete()
-                        messages.error(request, 'Image size should not exceed 5MB')
-                        return redirect('home-page')
-                    
-                    # Validate file type
-                    if not image.content_type.startswith('image/'):
-                        post.delete()
-                        messages.error(request, 'File must be an image')
-                        return redirect('home-page')
-                    
-                    post.image = image
-                    post.save()
-                
-                messages.success(request, 'Post created successfully!')
-                return redirect('home-page')
-            except Exception as e:
-                messages.error(request, f'Error creating post: {str(e)}')
-        else:
-            messages.error(request, 'Please fill in all required fields')
-    
-    return redirect('home-page')
+        images = request.FILES.getlist('images')
+
+        if not title or not content:
+            messages.error(request, 'Title and content are required.')
+            return redirect('home')
+
+        # Create the post
+        post = Post.objects.create(
+            title=title,
+            content=content,
+            author=request.user
+        )
+
+        # Handle multiple image uploads
+        for i, image in enumerate(images[:5]):  # Limit to 5 images
+            PostImage.objects.create(
+                post=post,
+                image=image,
+                order=i
+            )
+
+        messages.success(request, 'Your post has been created!')
+        return redirect('home')
+
+    return redirect('home')
 
 @login_required
 def my_posts(request):
@@ -164,17 +155,18 @@ def signout(request):
 
 @login_required
 def delete_post(request, post_id):
-    if request.method == 'POST':
-        post = get_object_or_404(Post, id=post_id)
-        if request.user == post.author:
-            # Check if post has image attribute and if it contains a file
-            if hasattr(post, 'image') and bool(post.image):
-                post.image.delete()  # Delete the image file
+    post = get_object_or_404(Post, id=post_id)
+    if post.author == request.user:
+        try:
+            # The Post.delete() method will handle deleting all associated images
+            # through the related_name and on_delete=CASCADE
             post.delete()
             messages.success(request, 'Post deleted successfully!')
-        else:
-            messages.error(request, 'You can only delete your own posts!')
-    return redirect('home-page')
+        except Exception as e:
+            messages.error(request, f'Error deleting post: {str(e)}')
+    else:
+        messages.error(request, 'You can only delete your own posts!')
+    return redirect('home')
 
 @login_required
 def edit_post(request, post_id):

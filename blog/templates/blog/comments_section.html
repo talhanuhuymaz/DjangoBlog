@@ -28,16 +28,16 @@
                 </div>
                 {% endif %}
                 <div class="flex-grow-1">
-                    <div class="form-floating">
+                    <div class="mb-2">
+                        <label for="commentContent{{ post.id }}" class="form-label small text-muted">Add a comment as {{ user.username }}</label>
                         <textarea class="form-control" 
                                   name="content" 
-                                  placeholder="Add a comment..." 
+                                  placeholder="Write your comment here..." 
                                   id="commentContent{{ post.id }}"
                                   style="height: 100px"
                                   required></textarea>
-                        <label for="commentContent{{ post.id }}">Add a comment as {{ user.username }}...</label>
                     </div>
-                    <div class="mt-2 text-end">
+                    <div class="text-end">
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-paper-plane me-2"></i>Post Comment
                         </button>

@@ -1,0 +1,180 @@
+<div class="modal fade" id="postModal{{ post.id }}" tabindex="-1" aria-labelledby="postModalLabel{{ post.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="d-flex align-items-center">
+                    {% if post.author.profile.avatar %}
+                    <img src="{{ post.author.profile.avatar.url }}" 
+                         alt="Profile Avatar" 
+                         class="avatar-circle post-avatar-image shadow-sm">
+                    {% else %}
+                    <div class="avatar-circle post-avatar bg-primary text-white shadow-sm">
+                        {{ post.author.username|make_list|first|upper }}
+                    </div>
+                    {% endif %}
+                    <div class="ms-3">
+                        <h6 class="mb-0 fw-semibold">{{ post.author.username }}</h6>
+                        <small class="text-muted">{{ post.date_posted|date:"F d, Y" }}</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h3 class="mb-4">{{ post.title }}</h3>
+
+                {% if post.images.all %}
+                <div class="post-gallery mb-4">
+                    <div id="postCarousel{{ post.id }}" class="carousel slide" data-bs-ride="false">
+                        <div class="carousel-inner">
+                            {% for image in post.images.all %}
+                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                <img src="{{ image.image.url }}" 
+                                     class="d-block w-100 rounded" 
+                                     alt="Post image"
+                                     style="max-height: 600px; object-fit: contain;">
+                                {% if image.caption %}
+                                <div class="carousel-caption d-none d-md-block">
+                                    <p class="mb-0">{{ image.caption }}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if post.images.count > 1 %}
+                        <button class="carousel-control-prev" type="button" data-bs-target="#postCarousel{{ post.id }}" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#postCarousel{{ post.id }}" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                        
+                        <!-- Thumbnails navigation -->
+                        <div class="carousel-thumbnails mt-3 d-flex gap-2 overflow-auto py-2">
+                            {% for image in post.images.all %}
+                            <div class="carousel-thumbnail-item" 
+                                 onclick="$('#postCarousel{{ post.id }}').carousel({{ forloop.counter0 }})">
+                                <img src="{{ image.image.url }}" 
+                                     alt="Thumbnail"
+                                     class="{% if forloop.first %}active{% endif %}">
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="post-content mb-4">{{ post.content }}</div>
+
+                <div class="post-actions d-flex align-items-center gap-3 mb-4">
+                    <button class="btn btn-like {% if post.id in liked_posts %}liked{% endif %}" 
+                            data-post-id="{{ post.id }}"
+                            onclick="likePost(this, '{{ csrf_token }}')"
+                            type="button">
+                        <i class="fas fa-heart"></i>
+                        <span class="likes-count ms-1">{{ post.total_likes }}</span>
+                    </button>
+                    <div class="comment-count">
+                        <i class="fas fa-comment"></i>
+                        <span class="ms-1">{{ post.comments.count }}</span>
+                    </div>
+                </div>
+
+                {% include 'blog/comments_section.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.carousel-item img {
+    background-color: var(--background-color);
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    width: 10%;
+    background: rgba(0,0,0,0.1);
+    border-radius: 8px;
+    margin: 0 10px;
+    height: 60px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.carousel-thumbnails {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-color) var(--background-color);
+}
+
+.carousel-thumbnails::-webkit-scrollbar {
+    height: 6px;
+}
+
+.carousel-thumbnails::-webkit-scrollbar-track {
+    background: var(--background-color);
+}
+
+.carousel-thumbnails::-webkit-scrollbar-thumb {
+    background-color: var(--primary-color);
+    border-radius: 6px;
+}
+
+.carousel-thumbnail-item {
+    flex: 0 0 auto;
+    width: 80px;
+    height: 60px;
+    cursor: pointer;
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+}
+
+.carousel-thumbnail-item:hover {
+    opacity: 0.8;
+}
+
+.carousel-thumbnail-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.carousel-thumbnail-item img.active {
+    opacity: 1;
+    border: 2px solid var(--primary-color);
+}
+
+@media (max-width: 768px) {
+    .carousel-control-prev,
+    .carousel-control-next {
+        width: 15%;
+        background: rgba(0,0,0,0.2);
+    }
+
+    .carousel-thumbnail-item {
+        width: 60px;
+        height: 45px;
+    }
+}
+</style>
+
+<script>
+// Update thumbnail active state when carousel slides
+document.querySelectorAll('[id^="postCarousel"]').forEach(carousel => {
+    carousel.addEventListener('slid.bs.carousel', function(e) {
+        const thumbnails = this.querySelectorAll('.carousel-thumbnail-item img');
+        thumbnails.forEach((thumb, idx) => {
+            if (idx === e.to) {
+                thumb.classList.add('active');
+            } else {
+                thumb.classList.remove('active');
+            }
+        });
+    });
+});
+</script> 
