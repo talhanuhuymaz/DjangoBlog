@@ -13,23 +13,12 @@
                         <input type="text" class="form-control" id="postTitle" name="title" required>
                     </div>
                     <div class="mb-3">
-                        <label for="postContent" class="form-label">Content</label>
-                        <textarea class="form-control" id="postContent" name="content" rows="5" required></textarea>
+                        <label for="postImage" class="form-label">Image (optional)</label>
+                        <input type="file" class="form-control" id="postImage" name="image" accept="image/*">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Images</label>
-                        <div class="image-upload-container">
-                            <div class="image-preview-container mb-3 d-flex flex-wrap gap-2" id="imagePreviewContainer"></div>
-                            <div class="d-flex align-items-center">
-                                <input type="file" class="form-control" id="postImages" name="images" accept="image/*" multiple>
-                                <button type="button" class="btn btn-outline-danger ms-2" onclick="clearImagePreviews()">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <small class="text-muted d-block mt-2">
-                            You can upload multiple images. Maximum 5 images per post.
-                        </small>
+                        <label for="postContent" class="form-label">Content</label>
+                        <textarea class="form-control" id="postContent" name="content" rows="5" required></textarea>
                     </div>
                     <div class="modal-footer px-0 pb-0">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -44,121 +33,46 @@
     </div>
 </div>
 
-<style>
-.image-preview-container {
-    min-height: 100px;
-    border: 2px dashed var(--border-color);
-    border-radius: 8px;
-    padding: 10px;
-    margin-bottom: 10px;
-}
-
-.image-preview-container:empty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.image-preview-container:empty::after {
-    content: 'Image previews will appear here';
-    color: var(--text-muted);
-    font-style: italic;
-}
-
-.image-preview-item {
-    position: relative;
-    width: 100px;
-    height: 100px;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.image-preview-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.image-preview-item .remove-image {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: rgba(0,0,0,0.5);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.image-preview-item .remove-image:hover {
-    background: rgba(220,53,69,0.8);
-}
-</style>
-
 <script>
-let selectedFiles = [];
-
-document.getElementById('postImages').addEventListener('change', function(e) {
-    const files = Array.from(e.target.files);
-    if (files.length > 5) {
-        alert('You can only upload up to 5 images');
-        e.target.value = '';
-        return;
-    }
-    
-    selectedFiles = files;
-    updateImagePreviews();
-});
-
-function updateImagePreviews() {
-    const container = document.getElementById('imagePreviewContainer');
-    container.innerHTML = '';
-    
-    selectedFiles.forEach((file, index) => {
-        const preview = document.createElement('div');
-        preview.className = 'image-preview-item';
-        
-        const img = document.createElement('img');
-        img.src = URL.createObjectURL(file);
-        
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'remove-image';
-        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-        removeBtn.onclick = () => removeImage(index);
-        
-        preview.appendChild(img);
-        preview.appendChild(removeBtn);
-        container.appendChild(preview);
-    });
-}
-
-function removeImage(index) {
-    selectedFiles.splice(index, 1);
-    updateImagePreviews();
-    
-    // Reset file input if no files remain
-    if (selectedFiles.length === 0) {
-        document.getElementById('postImages').value = '';
-    }
-}
-
-function clearImagePreviews() {
-    selectedFiles = [];
-    document.getElementById('postImages').value = '';
-    document.getElementById('imagePreviewContainer').innerHTML = '';
-}
-
 function handleNewPostSubmit(event) {
-    const btn = document.getElementById('createPostBtn');
-    const spinner = btn.querySelector('.spinner-border');
-    btn.disabled = true;
+    const form = event.target;
+    const submitBtn = document.getElementById('createPostBtn');
+    const spinner = submitBtn.querySelector('.spinner-border');
+    
+    // Check if form is already being submitted
+    if (form.hasAttribute('data-submitting')) {
+        event.preventDefault();
+        return false;
+    }
+    
+    // Disable multiple submissions
+    form.setAttribute('data-submitting', 'true');
+    submitBtn.disabled = true;
+    
+    // Show loading state
     spinner.classList.remove('d-none');
+    submitBtn.querySelector('i').classList.add('d-none');
+    submitBtn.textContent = ' Posting...';
+    submitBtn.prepend(spinner);
+    
     return true;
 }
+
+// Reset form when modal is hidden
+document.getElementById('newPostModal').addEventListener('hidden.bs.modal', function () {
+    const form = document.getElementById('newPostForm');
+    const submitBtn = document.getElementById('createPostBtn');
+    const spinner = submitBtn.querySelector('.spinner-border');
+    
+    // Reset form
+    form.reset();
+    
+    // Reset submit button
+    form.removeAttribute('data-submitting');
+    submitBtn.disabled = false;
+    spinner.classList.add('d-none');
+    
+    // Restore button text
+    submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Create Post';
+});
 </script> 
