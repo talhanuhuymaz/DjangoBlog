@@ -9,10 +9,11 @@ from cloudinary.models import CloudinaryField
 # Create your models here.
 
 class Post(models.Model):
-    title = models.CharField(max_length=500)
+    title = models.CharField(max_length=200)
     content = models.TextField()
     date_posted = models.DateTimeField(default=timezone.now)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='post_images/', storage=MediaCloudinaryStorage(), null=True, blank=True)
     likes = models.ManyToManyField(User, related_name='post_likes', blank=True)
 
     def __str__(self):
@@ -21,30 +22,10 @@ class Post(models.Model):
     def total_likes(self):
         return self.likes.count()
 
-    @property
-    def image(self):
-        # Return the first image if it exists
-        first_image = self.images.first()
-        return first_image.image if first_image else None
-
     def delete(self, *args, **kwargs):
-        # Delete all associated images when the post is deleted
-        for post_image in self.images.all():
-            post_image.image.delete()
-        super().delete(*args, **kwargs)
-
-class PostImage(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='post_images/', storage=MediaCloudinaryStorage())
-    caption = models.CharField(max_length=200, blank=True)
-    order = models.IntegerField(default=0)
-
-    class Meta:
-        ordering = ['order']
-
-    def delete(self, *args, **kwargs):
-        # Delete the image file when the PostImage is deleted
-        self.image.delete()
+        # Delete the image file when the post is deleted
+        if self.image:
+            self.image.delete()
         super().delete(*args, **kwargs)
 
 class Comment(models.Model):
