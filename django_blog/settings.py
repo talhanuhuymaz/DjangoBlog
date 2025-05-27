@@ -168,8 +168,9 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Login URL configuration
-LOGIN_URL = 'login-page'
+LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'home-page'
+LOGOUT_REDIRECT_URL = 'login-page'
 
 # Security settings for production
 if not DEBUG:
