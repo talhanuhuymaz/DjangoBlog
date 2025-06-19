@@ -1,5 +1,4 @@
 # DjangoBlog
-## 
 ![Screenshot 2025-06-19 200544](https://github.com/user-attachments/assets/c5e5de12-4c0d-4cc7-becc-7c0c26866c13)
 ## 
 ![Screenshot 2025-06-19 200705](https://github.com/user-attachments/assets/93a7b810-b1aa-4c10-ba88-bd13cd1bf717)
